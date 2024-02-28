@@ -68,9 +68,8 @@ public class CartServiceImpl implements CartService {
         Optional<CartItem> cartItemOptional = cartItemRepository.findByIdAndCart_Id(cartItemId, cartId);
         if (cartItemOptional.isPresent()) {
             CartItem cartItem = cartItemOptional.get();
-            Integer quantityInCart = cartItem.getQuantity();
-            if (quantityInCart + quantity > 0) {
-                cartItem.setQuantity(quantityInCart + quantity);
+            if (quantity > 0) {
+                cartItem.setQuantity(quantity);
                 cartItemRepository.save(cartItem);
                 return true;
             }

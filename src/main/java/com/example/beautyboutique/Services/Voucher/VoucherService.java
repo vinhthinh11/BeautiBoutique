@@ -8,4 +8,6 @@ import java.util.List;
 public interface VoucherService {
     List<VoucherDetail> getListVouchersByUserId(Integer userId);
     List<Voucher> getAllVouchers();
+
+    Boolean addVoucher( Integer userId, Integer voucherId);
 }

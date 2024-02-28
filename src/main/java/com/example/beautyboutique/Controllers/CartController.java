@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/cart")
 public class CartController {
 
@@ -34,20 +35,18 @@ public class CartController {
             Integer totalPages = pageCart.getTotalPages();
             Integer quantity = cartItems.size();
             BigDecimal totalPrice = pageCart.getTotalPrice();
-            if (!cartItems.isEmpty()) {
-                return new ResponseEntity<>(new CartResponse(0, "Get cart successfully!", cartItems, totalPages, totalPrice, quantity, 200), HttpStatus.OK);
-            }
-            return new ResponseEntity<>(new CartResponse(0, "Cart is empty!", 404), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new CartResponse(0, "Get cart successfully!", cartItems, totalPages, totalPrice, quantity, 200), HttpStatus.OK);
+
         } catch (Exception e) {
-            return new ResponseEntity<>(new CartResponse(0, "Get cart fail!", 400), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new CartResponse(0, "Get cart fail!", 500), HttpStatus.INTERNAL_SERVER_ERROR);
 
         }
     }
 
     @PutMapping(value = "/update-cart")
-    public ResponseEntity<?> updateCart(@RequestParam(value = "userId", required = true) Integer userId,
-                                        @RequestParam(value = "cartItemId", required = true) Integer cartItemId,
-                                        @RequestParam(value = "quantity", required = true) Integer quantity) {
+    public ResponseEntity<?> updateCart(@RequestParam(value = "userId") Integer userId,
+                                        @RequestParam(value = "cartItemId") Integer cartItemId,
+                                        @RequestParam(value = "quantity") Integer quantity) {
         try {
             Boolean isUpdate = cartService.updateCart(userId, cartItemId, quantity);
             if (isUpdate)
@@ -60,7 +59,7 @@ public class CartController {
 
     @DeleteMapping(value = "/delete-cart"
     )
-    public  ResponseEntity<?> deleteCart(@RequestParam(value = "userId") Integer userId,
+    public ResponseEntity<?> deleteCart(@RequestParam(value = "userId") Integer userId,
                                         @RequestParam(value = "cartItemId") Integer cartItemId) {
         try {
             Boolean isDelete = cartService.deleteCartItem(userId, cartItemId);
