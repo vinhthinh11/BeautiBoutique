@@ -11,4 +11,5 @@ public interface CommentService {
     public Comment createComment(Comment comment);
     public Comment updateComment(Integer id, Comment updateComment);
     public boolean deleteComment(Integer id);
+    public List<Comment> getAllCommentByBlogId(Integer blogId);
 }

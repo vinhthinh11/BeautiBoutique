@@ -65,11 +65,30 @@ public class VoucherServices implements VoucherService{
             return false;
         }
     }
+    @Override
+    public boolean getVoucherDetailByUserIdAndVoucherId(Integer userId , Integer voucherId){
+        try {
+            Optional<VoucherDetail> voucherDetail = voucherDetailRepository.findByUserIdAndVoucherId(userId,voucherId);
+            if(voucherDetail.isPresent()){
+                return true;
+            }else {
+                return false;
+            }
+        }
+        catch (Exception e){
+            System.out.println(" error : " + e.getMessage());
+            return false;
+        }
 
+    }
     @Override
     public Voucher createVoucher(Voucher voucher) {
 
         return voucherRepository.save(voucher);
+    }
+    @Override
+    public  VoucherDetail saveVoucherForUser(VoucherDetail voucherDetail) {
+        return  voucherDetailRepository.save(voucherDetail);
     }
 
     @Override
@@ -102,8 +121,8 @@ public class VoucherServices implements VoucherService{
                 if (updateVoucher.getMinimumOrder() != null) {
                     existingVoucher.setMinimumOrder(updateVoucher.getMinimumOrder());
                 }
-                if (updateVoucher.getMaximDiscount() != null) {
-                    existingVoucher.setMaximDiscount(updateVoucher.getMaximDiscount());
+                if (updateVoucher.getMaximumDiscount() != null) {
+                    existingVoucher.setMaximumDiscount(updateVoucher.getMaximumDiscount());
                 }
                 return voucherRepository.save(existingVoucher);
             } else {

@@ -6,7 +6,9 @@ import com.example.beautyboutique.DTOs.Responses.Cart.CartResponse;
 import com.example.beautyboutique.Models.BlogImage;
 import com.example.beautyboutique.Models.BlogPost;
 import com.example.beautyboutique.Models.Comment;
+import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Services.Blog.BlogServices;
+import com.example.beautyboutique.Services.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,14 +16,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/api/blog")
 @CrossOrigin(origins = "http://localhost:3000")
+
 public class BlogControllers {
     @Autowired
     BlogServices blogServices;
+    @Autowired
+    UserService userService;
 
     @GetMapping(value = "/get-all-blog")
     public ResponseEntity<?> getAllBlog() {
@@ -33,41 +39,48 @@ public class BlogControllers {
         }
     }
 
-    @PostMapping(value = "/create-blog/", consumes = {
+    @PostMapping(value = "/create-blog", consumes = {
             MediaType.APPLICATION_JSON_VALUE,
-            MediaType.APPLICATION_FORM_URLENCODED_VALUE
+            MediaType.MULTIPART_FORM_DATA_VALUE
     }, produces = {MediaType.APPLICATION_JSON_VALUE
     })
-    public @ResponseBody ResponseEntity<?> createBlog(BlogPost blog,
-                                                      @RequestParam(value = "imageIds") List<String> imageIds,
-                                                      @RequestParam(value = "imageUrls") List<String> imageUrls) {
+    public @ResponseBody ResponseEntity<?> createBlog(BlogRequest request) {
         try {
-            if (imageIds == null || imageUrls == null || imageIds.size() != imageUrls.size()) {
+            String[] imageIds = request.getImageIds();
+            String[] imageUrls = request.getImageUrls();
+
+            if (imageIds == null || imageUrls == null || imageIds.length != imageUrls.length) {
                 return new ResponseEntity<>("Invalid imageIds or imageUrls", HttpStatus.BAD_REQUEST);
             }
+            Integer userId = request.getUserId();
+            Optional<User> userBlog = userService.getUserById(userId);
+            BlogPost blog = new BlogPost();
+            blog.setUser(userBlog.get());
+            blog.setTitle(request.getTitle());
+            blog.setContent(request.getContent());
+            blog.setLikeCount(request.getLikeCount());
             BlogPost createdBlog = blogServices.createBlog(blog);
             if (createdBlog != null) {
-                IntStream.range(0, imageIds.size()).forEach(index -> {
-                    String imageId = imageIds.get(index);
-                    String imageUrl = imageUrls.get(index);
+                IntStream.range(0, imageIds.length).forEach(index -> {
+                    String imageId = imageIds[index];
+                    String imageUrl = imageUrls[index];
                     BlogImage image = new BlogImage();
                     image.setId(imageId);
                     image.setImageUrl(imageUrl);
                     image.setBlogPost(createdBlog);
                     blogServices.createBlogImage(image);
                 });
-
-
                 return new ResponseEntity<>("Created a successful blog post", HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>("Failed to create blog post", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>("Created a failed blog post", HttpStatus.BAD_REQUEST);
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>("Failed to create blog post", HttpStatus.BAD_REQUEST);
         }
     }
 
-    @DeleteMapping(value = "/delete-blog")
+    @DeleteMapping(value = "/delete-blog/")
     public ResponseEntity<?> deleteBlog(@RequestParam(value = "id") Integer id,
                                         @RequestParam(value = "userId") Integer userId) {
         try {
@@ -88,27 +101,62 @@ public class BlogControllers {
         }
     }
 
-    @PutMapping(value = "/update-blog")
-    public @ResponseBody ResponseEntity<?> updateBlog(BlogPost blogPost,
+    @DeleteMapping(value = "/delete-image-blog-id/")
+    public ResponseEntity<?> deleteAImage(@RequestParam(value = "id") String id) {
+        try {
+            System.out.println(id);
+            if (id == null || id.length() <= 0) {
+                return ResponseEntity.badRequest().body("Invalid blog ID");
+            }
+            boolean isDelete = blogServices.deleteAImageBlog(id);
+            if (isDelete)
+                return new ResponseEntity<>("Delete blog successfully!", HttpStatus.OK);
+
+            return new ResponseEntity<>("Delete blog fail!", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Delete blog fail!", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping(value = "/update-blog", consumes = {
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.MULTIPART_FORM_DATA_VALUE
+    }, produces = {MediaType.APPLICATION_JSON_VALUE
+    })
+    public @ResponseBody ResponseEntity<?> updateBlog(BlogRequest request,
                                                       @RequestParam(value = "id") Integer id,
                                                       @RequestParam(value = "userId") Integer userId) {
         try {
-            if (id == null || id <= 0) {
-                return ResponseEntity.badRequest().body("Invalid comment ID");
-            }
-            BlogPost blog = blogServices.getABlogById(id);
-            int ownerId = blog.getUser().getId();
-            if (userId == ownerId) {
-                BlogPost updatedBlogResult = blogServices.updateBlog(id, blogPost);
-                if (updatedBlogResult != null) {
-                    return new ResponseEntity<>("Updated comment successfully", HttpStatus.OK);
+            String[] imageIds = request.getImageIds();
+            String[] imageUrls = request.getImageUrls();
+            Optional<User> userBlog = userService.getUserById(userId);
+            BlogPost blog = new BlogPost();
+            blog.setUser(userBlog.get());
+            blog.setTitle(request.getTitle());
+            blog.setContent(request.getContent());
+            BlogPost updateBlog = blogServices.updateBlog(id, blog);
+            if (updateBlog != null) {
+                if (imageIds == null && imageUrls == null) {
+                    return new ResponseEntity<>("Update a successful blog post", HttpStatus.CREATED);
                 }
-                return new ResponseEntity<>("Failed to update comment", HttpStatus.BAD_REQUEST);
+                IntStream.range(0, imageIds.length).forEach(index -> {
+                    String imageId = imageIds[index];
+                    String imageUrl = imageUrls[index];
+                    BlogImage image = new BlogImage();
+                    image.setId(imageId);
+                    image.setImageUrl(imageUrl);
+                    image.setBlogPost(updateBlog);
+                    blogServices.createBlogImage(image);
+                });
+                return new ResponseEntity<>("Update a successful blog post", HttpStatus.CREATED);
+
+            } else {
+                return new ResponseEntity<>("Failed to update blog post: Blog post not found", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>("Internal server!", HttpStatus.BAD_REQUEST);
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>("Failed to Update blog post", HttpStatus.BAD_REQUEST);
         }
-        return null;
     }
 
 }

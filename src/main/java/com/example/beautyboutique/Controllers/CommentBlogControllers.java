@@ -1,10 +1,15 @@
 package com.example.beautyboutique.Controllers;
 
+import com.example.beautyboutique.DTOs.Requests.Blog.CommentBlogRequest;
+import com.example.beautyboutique.DTOs.Responses.Blog.PageBlog;
+import com.example.beautyboutique.DTOs.Responses.Comment.PageComment;
 import com.example.beautyboutique.Models.BlogImage;
 import com.example.beautyboutique.Models.BlogPost;
 import com.example.beautyboutique.Models.Comment;
 import com.example.beautyboutique.Models.User;
+import com.example.beautyboutique.Services.Blog.BlogServices;
 import com.example.beautyboutique.Services.Comment.CommentServices;
+import com.example.beautyboutique.Services.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,22 +17,39 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/api/blog/comment")
+@CrossOrigin(origins = "http://localhost:3000")
 public class CommentBlogControllers {
     @Autowired
     CommentServices commentServices;
+    @Autowired
+    UserService userService;
 
+    @Autowired
+    BlogServices blogService;
     @PostMapping(value = "/create-comment", consumes = {
             MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_FORM_URLENCODED_VALUE
     }, produces = {MediaType.APPLICATION_JSON_VALUE
     })
     @ResponseBody
-    ResponseEntity<?> createComment(Comment comment) {
+    ResponseEntity<?> createComment(CommentBlogRequest request) {
         try {
+           Integer userId = request.getUserId();
+           Optional<User> userComment = userService.getUserById(userId);
+
+           Integer blogId = request.getBlogId();
+           BlogPost blogComment = blogService.getABlogById(blogId);
+
+           Comment comment = new Comment();
+           comment.setBlogPost(blogComment);
+           comment.setContent(request.getContent());
+           comment.setUser(userComment.get());
+
             Comment createdComment = commentServices.createComment(comment);
             if (createdComment != null) {
                 return new ResponseEntity<>("Created a comment successfully", HttpStatus.CREATED);
@@ -86,6 +108,15 @@ public class CommentBlogControllers {
             return new ResponseEntity<>("Internal server!", HttpStatus.BAD_REQUEST);
         }
         return null;
+    }
+    @GetMapping(value = "/get-comment-blog")
+    public ResponseEntity<?> getCommentBlog( @RequestParam(value = "blogId") Integer blogid) {
+        try {
+            List<Comment> commentsList = commentServices.getAllCommentByBlogId(blogid);
+            return new ResponseEntity<>(new PageComment("Get All Blog Successfully", commentsList), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Retrieving information failed", HttpStatus.BAD_REQUEST);
+        }
     }
 
 }

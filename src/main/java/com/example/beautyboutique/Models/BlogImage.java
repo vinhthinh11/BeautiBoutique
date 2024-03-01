@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BlogImage {
     @Id
-    @Column(name = "imageId", columnDefinition = "varchar(30)", nullable = false)
+    @Column(name = "imageId", columnDefinition = "varchar(255)", nullable = false)
     private String id;
 
     @Column(name = "imageUrl", columnDefinition = "varchar(255)")

@@ -1,5 +1,5 @@
 package com.example.beautyboutique.Services.Blog;
-
+import org.springframework.data.domain.Sort;
 import com.example.beautyboutique.Models.BlogImage;
 import com.example.beautyboutique.Models.BlogPost;
 import com.example.beautyboutique.Models.Comment;
@@ -25,8 +25,13 @@ public class BlogServices implements  BlogService {
     @Override
     public List<BlogPost> getAllBlog() {
         try {
-            List<BlogPost> blogPostList = blogRepository.findAll();
-                return blogPostList;
+            // Sử dụng Sort để sắp xếp theo trường createDate
+            Sort sortByCreateDate = Sort.by(Sort.Direction.DESC, "createDate");
+
+            // Sử dụng phương thức findAll của repository và truyền Sort vào
+            List<BlogPost> blogPostList = blogRepository.findAll(sortByCreateDate);
+
+            return blogPostList;
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ArrayList<>();
@@ -35,6 +40,7 @@ public class BlogServices implements  BlogService {
 
     @Override
     public BlogPost updateBlog(Integer id, BlogPost updatedBlogPost) {
+        System.out.printf("--------ID--------" + id);
         try {
             Optional<BlogPost> optionalBlogPost = blogRepository.findById(id);
             if (optionalBlogPost.isPresent()) {
@@ -60,6 +66,8 @@ public class BlogServices implements  BlogService {
         return null; // Indicate failure
     }
 
+
+
     @Override
     public boolean deleteBlog(Integer id) {
         try {
@@ -83,6 +91,24 @@ public class BlogServices implements  BlogService {
             }
         } catch (Exception e) {
             System.out.println("An error occurred while deleting the blog post: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deleteAImageBlog(String id) {
+        try {
+            Optional<BlogImage> optionalBlogImage = blogImageRepository.findById(id);
+            if(optionalBlogImage.isPresent()){
+                blogImageRepository.deleteById(id);
+                System.out.println("BlogPost image with id " + id + " and its associated images have been deleted.");
+                return true;
+            }else {
+                System.out.println("BlogPost image not found with id: " + id);
+                return false;
+            }
+        }catch (Exception e){
+            System.out.println("An error occurred while deleting the image blog post: " + e.getMessage());
             return false;
         }
     }

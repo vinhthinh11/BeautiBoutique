@@ -22,7 +22,7 @@ public class Voucher {
     @Column(name = "title", columnDefinition = "TEXT")
     private String title;
 
-    @Column(name = "discount", columnDefinition = "TEXT")
+    @Column(name = "discount", columnDefinition = "double")
     private Float discount;
 
     @Column(name = "content", columnDefinition = "TEXT")
@@ -38,7 +38,7 @@ public class Voucher {
     private BigDecimal minimumOrder;
 
     @Column(name = "maximDiscount", columnDefinition = "DECIMAL(10, 2)")
-    private BigDecimal maximDiscount;
+    private BigDecimal maximumDiscount;
 
     @Column(name = "startDate", columnDefinition = "DATE", nullable = false)
     @Temporal(TemporalType.DATE)

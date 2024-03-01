@@ -5,6 +5,7 @@ import com.example.beautyboutique.Models.BlogPost;
 import com.example.beautyboutique.Models.Comment;
 import com.example.beautyboutique.Repositories.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,6 +20,16 @@ public class CommentServices implements CommentService{
     public List<Comment> getAllComment() {
         try {
             List<Comment> commentList = commentRepository.findAll();
+            return commentList;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    public List<Comment> getAllCommentByBlogId(Integer blogId) {
+        try {
+            Sort sortByCreateDate = Sort.by(Sort.Direction.DESC, "createdAt");
+            List<Comment> commentList = commentRepository.findCommentsByBlogPost_Id(blogId,sortByCreateDate);
             return commentList;
         } catch (Exception e) {
             System.out.println(e.getMessage());

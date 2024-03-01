@@ -10,9 +10,10 @@ public interface VoucherService {
     public List<Voucher> getAllVoucher();
 
     List<VoucherDetail> getListVouchersByUserId(Integer userId);
-
+    public boolean getVoucherDetailByUserIdAndVoucherId(Integer userId , Integer voucherId);
     public Voucher getAVoucherId(Integer id);
     public boolean deleteVoucher(Integer id );
     public Voucher createVoucher(Voucher voucher);
+    public  VoucherDetail saveVoucherForUser(VoucherDetail voucherDetail);
     public Voucher updateVoucher(Integer id, Voucher updateVoucher);
 }
