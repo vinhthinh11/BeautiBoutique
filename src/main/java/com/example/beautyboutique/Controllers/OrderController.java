@@ -42,7 +42,7 @@ public class OrderController {
     OrderServiceImpl orderService;
 
     @GetMapping(value = "/order-histories")
-    public ResponseEntity<?> getOrderHistories(@RequestParam(name = "userId") Integer userId,
+    public ResponseEntity<?> getOrderHistories(@RequestParam(required = false, name = "userId") Integer userId,
                                                @RequestParam(defaultValue = "1", required = false, name = "pageNo") Integer pageNo,
                                                @RequestParam(defaultValue = "4", required = false, name = "pageSize") Integer pageSize,
                                                @RequestParam(defaultValue = "createdAt", required = false, name = "sortBy") String sortBy,
@@ -52,7 +52,7 @@ public class OrderController {
             Integer totalPages = pageOrder.getTotalPages();
             List<Orders> orderHistories = pageOrder.getOrders();
             Integer quantity = orderHistories.size();
-            return new ResponseEntity<>(new OrderHistories(0, "Get order history successfully!", orderHistories, totalPages, quantity), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new OrderHistories(0, "Get order history successfully!", orderHistories, totalPages, quantity), HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new ResponseMessage("Internal Server Error"), HttpStatus.BAD_REQUEST);
@@ -69,8 +69,6 @@ public class OrderController {
 
         try {
             Map<String, Object> resultPayment = zaloPayService.createOrder(userId, cartItemId.getCartItemsId());
-            System.out.println(resultPayment.get("returncode"));
-            System.out.println(resultPayment.get("returnmessage"));
             if ((int) resultPayment.get("returncode") == 1) {
                 String paymentURL = (String) resultPayment.get("orderurl");
                 String zpTransToken = (String) resultPayment.get("zptranstoken");
@@ -92,27 +90,31 @@ public class OrderController {
             MediaType.APPLICATION_JSON_VALUE
     )
     public @ResponseBody ResponseEntity<?> createOrder(CartItemId cartItemId,
-                                                       @RequestParam(name = "appTransId", required = false) String appTransId,
+                                                       @RequestParam(name = "zpTransToken", required = false) String zpTransToken,
                                                        @RequestParam(name = "userId") Integer userId,
                                                        @RequestParam(name = "shipDetailId") Integer shipDetailId,
                                                        @RequestParam(name = "deliveryId") Integer deliveryId,
-                                                       @RequestParam(name = "paymentId") Integer paymentId
+                                                       @RequestParam(name = "paymentId") Integer paymentId,
+                                                       @RequestParam(name = "voucherId") Integer voucherId
 
     ) throws JSONException, URISyntaxException, IOException {
         try {
-            Map<String, Object> result = zaloPayService.statusOrder(appTransId);
-            if (appTransId != null) {
+            Map<String, Object> result = zaloPayService.statusOrder(zpTransToken);
+            System.out.println(result.get("returncode"));
+            System.out.println(result.get("returnmessage"));
+            if (zpTransToken != null) {
                 if ((int) result.get("returncode") == 1 && result.get("returnmessage").toString().equals("Giao dịch thành công")) {
-                    CreatedOrder createdOrder = orderService.createOrder(userId, shipDetailId, deliveryId, paymentId, cartItemId.getCartItemsId());
+                    CreatedOrder createdOrder = orderService.createOrder(userId, shipDetailId, deliveryId, paymentId, voucherId, cartItemId.getCartItemsId());
                     if (createdOrder.getStatus())
                         return new ResponseEntity<>(createdOrder.getMessage(), HttpStatus.CREATED);
                     else
                         return new ResponseEntity<>(createdOrder.getMessage(), HttpStatus.BAD_REQUEST);
                 } else {
-                    return new ResponseEntity<>("System Failed!", HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<>("Zalo payment failed!", HttpStatus.BAD_REQUEST);
                 }
             }
-            CreatedOrder createdOrder = orderService.createOrder(userId, shipDetailId, deliveryId, paymentId, cartItemId.getCartItemsId());
+            // order with payment local
+            CreatedOrder createdOrder = orderService.createOrder(userId, shipDetailId, deliveryId, paymentId, voucherId, cartItemId.getCartItemsId());
             if (createdOrder.getStatus())
                 return new ResponseEntity<>(createdOrder.getMessage(), HttpStatus.CREATED);
             else

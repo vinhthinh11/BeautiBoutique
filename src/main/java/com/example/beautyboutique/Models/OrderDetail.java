@@ -24,7 +24,7 @@ public class OrderDetail {
     @JsonIgnore
     private Orders orders;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "productId")
     private Product product;
 

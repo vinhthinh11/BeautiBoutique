@@ -40,6 +40,8 @@ public class OrderServiceImpl implements OrderService {
     CartItemRepository cartItemRepository;
     @Autowired
     ProductRepository productRepository;
+    @Autowired
+    VoucherRepository voucherRepository;
 
 
     public BigDecimal sumPriceItem(Integer[] cartItemIds) {
@@ -50,17 +52,20 @@ public class OrderServiceImpl implements OrderService {
             // Handle the null case, throw an exception, or return an error
         }
         for (Integer cartItemId : cartItemIds) {
+
             Optional<CartItem> cartItemOptional = cartItemRepository.findById(cartItemId);
             if (cartItemOptional.isPresent()) {
                 CartItem cartItem = cartItemOptional.get();
+                System.out.println(cartItem.getTotalPrice());
                 totalPrice = totalPrice.add(cartItem.getTotalPrice());
             }
         }
         return totalPrice;
     }
 
+    @Transactional
     @Override
-    public CreatedOrder createOrder(Integer userId, Integer shipDetailId, Integer deliveryId, Integer paymentId, Integer[] cartItemsId) {
+    public CreatedOrder createOrder(Integer userId, Integer shipDetailId, Integer deliveryId, Integer paymentId, Integer voucherId, Integer[] cartItemsId) {
         try {
             // handle check existing
             User user = userRepository.findById(userId)
@@ -73,26 +78,28 @@ public class OrderServiceImpl implements OrderService {
                     .orElseThrow(() -> new ExpressionException("Payment not found!"));
             OrderStatus orderStatus = statusRepository.findById(1)
                     .orElseThrow(() -> new ExpressionException("Status not found!"));
+            Voucher voucher = voucherRepository.findById(voucherId)
+                    .orElseThrow(() -> new ExpressionException("Voucher not found!"));
 
-            // handle create order
-            Orders order = new Orders(shipDetail, sumPriceItem(cartItemsId), delivery, payment, orderStatus);
-            orderRepository.save(order);
 
-            System.out.println("cartItemsId: " + cartItemsId[0]);
-            // handle create order details
-            if (cartItemsId == null) {
-                // Handle the null case, throw an exception, or return an error
-                return new CreatedOrder(false, "cartItemsId is null!");
+            BigDecimal totalPrice = sumPriceItem(cartItemsId);
+            if (cartItemsId.length > 0 && totalPrice.compareTo(BigDecimal.ZERO) == 0) {
+                return new CreatedOrder(true, "Create Order fail, cart item not found!");
             }
+            // handle create order
+            Orders order = new Orders(shipDetail, totalPrice, delivery, payment, orderStatus, voucher);
+            // handle create order details
             for (Integer cartItemId : cartItemsId) {
                 handleOrderDetailCreation(order, cartItemId);
             }
+            // handle reset total price in cart
 
+            orderRepository.save(order);
             return new CreatedOrder(true, "Create Order successfully!");
         } catch (Exception e) {
             // Log the exception
             System.out.println("Error creating order: " + e.getMessage());
-            return new CreatedOrder(false, "Create Order fail!!");
+            return new CreatedOrder(false, "Create Order fail!");
         }
     }
 
@@ -230,9 +237,8 @@ public class OrderServiceImpl implements OrderService {
             Product product = cartItem.getProduct();
             Integer inStock = product.getQuantity();
             Integer quantityBuy = cartItem.getQuantity();
-
             // check quantity in stock
-            if (inStock - quantityBuy <= 0)
+            if (inStock - quantityBuy < 0)
                 throw new ExpressionException("Not enough quantity!");
 
             // handle quantity products
@@ -246,6 +252,7 @@ public class OrderServiceImpl implements OrderService {
 
             // handle delete cart Item
             cartItemRepository.delete(cartItem);
+
         });
     }
 

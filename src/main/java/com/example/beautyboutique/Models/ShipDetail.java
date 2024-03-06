@@ -31,7 +31,6 @@ public class ShipDetail {
 
     @ManyToOne
     @JoinColumn(name = "userId")
-    @JsonIgnore
     private User user;
 
     public ShipDetail(String fullName, String address, String phoneNumber, User user) {

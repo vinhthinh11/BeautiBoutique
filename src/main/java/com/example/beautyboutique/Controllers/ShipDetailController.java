@@ -24,7 +24,6 @@ public class ShipDetailController {
 
     @GetMapping(value = "/get-all")
     public ResponseEntity<?> getShipDetails(@RequestParam(value = "userId", required = true) Integer userId) {
-
         try {
             List<ShipDetail> shipDetails = shipDetailService.getShipDetailList(userId);
             return new ResponseEntity<>(new ResponseShipDetails(shipDetails), HttpStatus.OK);
