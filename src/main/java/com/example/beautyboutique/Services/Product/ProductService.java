@@ -23,6 +23,6 @@ public interface ProductService {
 
    Product get(Integer id ,Integer pageNumber, Integer pageSize);
 
-   List<Product> findProductBycCategoryId(int categoryId);
+   List<Product> findProductBycCategoryId(int categoryId); ProductImage createProductImage(ProductImage image);
 }
 

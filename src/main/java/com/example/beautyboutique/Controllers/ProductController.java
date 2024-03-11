@@ -1,20 +1,23 @@
 package com.example.beautyboutique.Controllers;
 
+import com.example.beautyboutique.DTOs.Requests.Product.ProductRequest;
 import com.example.beautyboutique.Models.Brand;
 import com.example.beautyboutique.Models.Category;
 import com.example.beautyboutique.Models.Product;
+import com.example.beautyboutique.Models.ProductImage;
 import com.example.beautyboutique.Payload.Response.ResponseMessage;
 import com.example.beautyboutique.Services.Brand.BrandService;
 import com.example.beautyboutique.Services.Category.CategoryService;
 import com.example.beautyboutique.Services.Product.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @CrossOrigin("*")
 @RequestMapping("/api/product") //http://localhost:8080/api/product
@@ -51,18 +54,53 @@ public class ProductController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+    @PostMapping(value = "/create-product", consumes = {
+            MediaType.APPLICATION_JSON_VALUE,
+            MediaType.MULTIPART_FORM_DATA_VALUE
+    }, produces = {MediaType.APPLICATION_JSON_VALUE
+    })
+    public @ResponseBody ResponseEntity<?> createProduct(ProductRequest request) {
+        try {
+            String[] imageIds = request.getImageIds();
+            String[] imageUrls = request.getImageUrls();
+            System.out.printf("image " + request.getImageIds());
+            if (imageIds == null || imageUrls == null || imageIds.length != imageUrls.length) {
+                return new ResponseEntity<>("Invalid imageIds or imageUrls", HttpStatus.BAD_REQUEST);
+            }
+            Integer brandId = request.getBrandId();
+            Brand brandData = brandService.findById(brandId);
+            Integer categoryId = request.getCategoryId();
+            Category categoryData = categoryService.findById(categoryId);
 
-    @PostMapping("/create")
-    public ResponseEntity<ResponseMessage> createProduct(@RequestBody Product product) {
-        System.out.println("Create new product");
-        Product productCreat = productService.saveAfterCheck(product);
-        if (productCreat == null) {
-            return new ResponseEntity<>(new ResponseMessage("Add product fail."), HttpStatus.BAD_REQUEST);
-        } else {
-            return new ResponseEntity<>(new ResponseMessage("Add product success !!!"), HttpStatus.OK);
+            Product product = new Product();
+            product.setBrand(brandData);
+            product.setCategory(categoryData);
+            product.setProductName(request.getProductName());
+            product.setQuantity(request.getQuantity());
+            product.setDescription(request.getDescription());
+            product.setActualPrice(request.getActualPrice());
+            product.setSalePrice(request.getSalePrice());
+
+            Product createdProduct = productService.save(product);
+            if (createdProduct != null) {
+                IntStream.range(0, imageIds.length).forEach(index -> {
+                    String imageId = imageIds[index];
+                    String imageUrl = imageUrls[index];
+                    ProductImage image = new ProductImage();
+                    image.setId(imageId);
+                    image.setImageUrl(imageUrl);
+                    image.setProduct(createdProduct);
+                    productService.createProductImage(image);
+                });
+                return new ResponseEntity<>("Created a successful Product", HttpStatus.CREATED);
+            } else {
+                return new ResponseEntity<>("Failed to create Product", HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>("Failed to create Product", HttpStatus.BAD_REQUEST);
         }
     }
-
     @GetMapping("/findByName")
     public ResponseEntity<List<Product>> findByName(
             @RequestParam(name = "productName") String productName,

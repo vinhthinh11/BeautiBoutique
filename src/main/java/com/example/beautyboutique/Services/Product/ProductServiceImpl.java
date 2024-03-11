@@ -1,6 +1,8 @@
 package com.example.beautyboutique.Services.Product;
 import com.example.beautyboutique.Exception.ResourceNotFoundException;
 import com.example.beautyboutique.Models.Product;
+import com.example.beautyboutique.Models.ProductImage;
+import com.example.beautyboutique.Repositories.ProductImageRepository;
 import com.example.beautyboutique.Repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,7 +14,7 @@ import java.util.List;
 @Service
 public class ProductServiceImpl  implements  ProductService{
     @Autowired
-    private ProductRepository productRepository;
+    private ProductRepository productRepository; @Autowired private ProductImageRepository productImageRepository;
     @Override
     public Product save(Product product) {
         return productRepository.save(product);
@@ -82,7 +84,9 @@ public class ProductServiceImpl  implements  ProductService{
 
         return productsPage.getContent();
     }
-
+    public ProductImage createProductImage(ProductImage image){
+        return productImageRepository.save(image);
+    }
 
     @Override
     public  List<Product> findProductBycCategoryId(int categoryId) {
