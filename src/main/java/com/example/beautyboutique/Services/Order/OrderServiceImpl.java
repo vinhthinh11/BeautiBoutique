@@ -114,7 +114,6 @@ public class OrderServiceImpl implements OrderService {
                         : Sort.by(sortBy).descending();
                 // create Pageable instance
                 pageable = PageRequest.of(pageNo, pageSize, sort);
-
             }
             Page<Orders> pageOrder = orderRepository.findByConditions(userId, pageable);
             Integer totalOrders = pageOrder.getTotalPages();
@@ -207,6 +206,8 @@ public class OrderServiceImpl implements OrderService {
 
         // handle check update status
         Orders orders = ordersOptional.get();
+        if(orders.getOrderStatus().getId() == 2 || orders.getOrderStatus().getId() == 4)
+            return new UpdateOrder(true, "You have approved this order!");
         OrderStatus orderStatus = orderStatusOptional.get();
         return updateStatus(orders, orderStatus);
     }

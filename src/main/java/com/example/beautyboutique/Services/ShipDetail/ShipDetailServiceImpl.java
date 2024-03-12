@@ -2,6 +2,7 @@ package com.example.beautyboutique.Services.ShipDetail;
 
 
 import com.example.beautyboutique.DTOs.Requests.ShipDetail.ShipDetailDTO;
+import com.example.beautyboutique.DTOs.Responses.ResponseDTO;
 import com.example.beautyboutique.Models.ShipDetail;
 import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Repositories.ShipDetailRepository;
@@ -28,70 +29,70 @@ public class ShipDetailServiceImpl implements ShipDetailService {
     }
 
     @Override
-    public Boolean createShipDetail(Integer userId, ShipDetailDTO shipDetailDTO) {
+    public ResponseDTO createShipDetail(Integer userId, ShipDetailDTO shipDetailDTO) {
         try {
             Optional<User> userOptional = userRepository.findById(userId);
             if (userOptional.isEmpty()) {
-                return false;
+                return new ResponseDTO(false, "User not found!");
             }
             User user = userOptional.get();
             ShipDetail shipDetail = new ShipDetail(shipDetailDTO.getFullName(), shipDetailDTO.getAddress(), shipDetailDTO.getPhoneNumber(), user);
             shipDetailRepository.save(shipDetail);
-            return true;
+            return new ResponseDTO(true, "Create ship detail successfully!");
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return false;
+            return new ResponseDTO(false, "Create ship detail fail!");
         }
     }
 
     @Override
-    public Boolean updateShipDetail(Integer userId, Integer shipDetailId, ShipDetailDTO shipDetailDTO) {
+    public ResponseDTO updateShipDetail(Integer userId, Integer shipDetailId, ShipDetailDTO shipDetailDTO) {
         try {
             Optional<User> userOptional = userRepository.findById(userId);
             if (userOptional.isEmpty()) {
-                return false;
+                return new ResponseDTO(false, "User not found!");
             }
             Optional<ShipDetail> shipDetailOptional = shipDetailRepository.findById(shipDetailId);
             if (shipDetailOptional.isEmpty()) {
-                return false;
+                return new ResponseDTO(false, "Ship detail not found!");
             }
             User user = userOptional.get();
             ShipDetail shipDetail = shipDetailOptional.get();
-            if(!Objects.equals(shipDetail.getUser().getId(), user.getId())) {
-                return false;
+            if (!Objects.equals(shipDetail.getUser().getId(), user.getId())) {
+                return new ResponseDTO(false, "This shipping detail does not exist in your account!");
             }
             shipDetail.setFullName(shipDetailDTO.getFullName());
             shipDetail.setAddress(shipDetailDTO.getAddress());
             shipDetail.setPhoneNumber(shipDetailDTO.getPhoneNumber());
             shipDetailRepository.save(shipDetail);
-            return true;
+            return new ResponseDTO(true, "Update ship detail successfully!");
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return false;
+            return new ResponseDTO(false, "Update ship detail fail!!");
         }
     }
 
     @Override
-    public Boolean deleteShipDetail(Integer userId, Integer shipDetailId) {
+    public ResponseDTO deleteShipDetail(Integer userId, Integer shipDetailId) {
         try {
             Optional<User> userOptional = userRepository.findById(userId);
             if (userOptional.isEmpty()) {
-                return false;
+                return new ResponseDTO(false, "User not found!");
             }
             Optional<ShipDetail> shipDetailOptional = shipDetailRepository.findById(shipDetailId);
             if (shipDetailOptional.isEmpty()) {
-                return false;
+                return new ResponseDTO(false, "Ship detail not found!");
             }
             User user = userOptional.get();
             ShipDetail shipDetail = shipDetailOptional.get();
-            if(!Objects.equals(shipDetail.getUser().getId(), user.getId())) {
-                return false;
+            if (!Objects.equals(shipDetail.getUser().getId(), user.getId())) {
+                return new ResponseDTO(false, "This shipping detail does not exist in your account!");
             }
             shipDetailRepository.delete(shipDetail);
-            return true;
+            return new ResponseDTO(true, "Delete ship detail successfully!");
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return true;
+            return new ResponseDTO(false, "Delete ship detail fail!");
         }
     }
 }

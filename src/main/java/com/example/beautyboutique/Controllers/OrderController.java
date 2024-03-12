@@ -76,8 +76,10 @@ public class OrderController {
                 String appTransId = (String) resultPayment.get("apptransid");
                 return new ResponseEntity<>(new PaymentResponse("Create payment successfully!", paymentURL, zpTransToken, appTransId), HttpStatus.CREATED);
             }
-            return new ResponseEntity<>(new ResponseMessage("Create payment fail!"), HttpStatus.BAD_REQUEST);
+            if ((int) resultPayment.get("returncode") == -4 && resultPayment.get("returnmessage") == "Not enough quantity!")
+                return new ResponseEntity<>(new ResponseMessage("Not enough quantity in stock!"), HttpStatus.BAD_REQUEST);
 
+            return new ResponseEntity<>(new ResponseMessage("Create payment fail!"), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new ResponseMessage("Internal Server!"), HttpStatus.INTERNAL_SERVER_ERROR);
