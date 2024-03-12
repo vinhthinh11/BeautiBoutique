@@ -21,14 +21,15 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                .requestMatchers(HttpMethod.DELETE).permitAll()
+                                .requestMatchers(HttpMethod.DELETE).hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST).permitAll()
-                                .requestMatchers(HttpMethod.PUT).permitAll()
+                                .requestMatchers(HttpMethod.GET).permitAll()
                                 .requestMatchers("/api/cart/**").permitAll()
                                 .requestMatchers("/api/blog/**").permitAll()
                                 .requestMatchers("/api/voucher/**").permitAll()
                                 .requestMatchers("/api/order/**").permitAll()
-                                .requestMatchers("/api/ship-detail/**").permitAll()
+                                .requestMatchers("/api/product/**").permitAll()
+                                .requestMatchers("/api/category/**").permitAll()
                                 .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
