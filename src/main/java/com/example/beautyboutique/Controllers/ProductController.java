@@ -1,11 +1,8 @@
 package com.example.beautyboutique.Controllers;
 
 import com.example.beautyboutique.DTOs.Requests.Product.ProductRequest;
-import com.example.beautyboutique.Models.Brand;
-import com.example.beautyboutique.Models.Category;
+import com.example.beautyboutique.Exception.ResourceNotFoundException;
 import com.example.beautyboutique.Models.Product;
-import com.example.beautyboutique.Models.ProductImage;
-import com.example.beautyboutique.Payload.Response.ResponseMessage;
 import com.example.beautyboutique.Services.Brand.BrandService;
 import com.example.beautyboutique.Services.Category.CategoryService;
 import com.example.beautyboutique.Services.Product.ProductService;
@@ -15,9 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-import java.util.stream.IntStream;
 
 @CrossOrigin("*")
 @RequestMapping("/api/product") //http://localhost:8080/api/product
@@ -32,7 +27,7 @@ public class ProductController {
 
     @GetMapping("/get-all")
     public ResponseEntity<List<Product>> getAllProducts(@RequestParam(value = "pageNumber", required = false, defaultValue = "1") Integer pageNumber,
-                                                        @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
+                                                        @RequestParam(value = "pageSize", required = false, defaultValue = "100") Integer pageSize) {
         List<Product> products = productService.findAll(pageNumber, pageSize);
         if (products.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -42,13 +37,11 @@ public class ProductController {
     }
 
     @GetMapping("/findById/{id}")
-    public ResponseEntity<Product> findById(@PathVariable(value = "id") Integer id,
-                                            @RequestParam(value = "pageNumber", required = false, defaultValue = "1") Integer pageNumber,
-                                            @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize) {
+    public ResponseEntity<Product> findById(@PathVariable(value = "id") Integer id)
+                                             {
         System.out.println("Find by id");
-        Product products = productService.get(id, pageNumber, pageSize);
+        Product products = productService.findById(id);
         if (products != null) {
-            System.out.println(products.getId());
             return new ResponseEntity<>(products, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -59,39 +52,10 @@ public class ProductController {
             MediaType.MULTIPART_FORM_DATA_VALUE
     }, produces = {MediaType.APPLICATION_JSON_VALUE
     })
-    public @ResponseBody ResponseEntity<?> createProduct(ProductRequest request) {
+    public @ResponseBody ResponseEntity<?> createProduct(@RequestBody ProductRequest request) {
         try {
-            String[] imageIds = request.getImageIds();
-            String[] imageUrls = request.getImageUrls();
-            System.out.printf("image " + request.getImageIds());
-            if (imageIds == null || imageUrls == null || imageIds.length != imageUrls.length) {
-                return new ResponseEntity<>("Invalid imageIds or imageUrls", HttpStatus.BAD_REQUEST);
-            }
-            Integer brandId = request.getBrandId();
-            Brand brandData = brandService.findById(brandId);
-            Integer categoryId = request.getCategoryId();
-            Category categoryData = categoryService.findById(categoryId);
-
-            Product product = new Product();
-            product.setBrand(brandData);
-            product.setCategory(categoryData);
-            product.setProductName(request.getProductName());
-            product.setQuantity(request.getQuantity());
-            product.setDescription(request.getDescription());
-            product.setActualPrice(request.getActualPrice());
-            product.setSalePrice(request.getSalePrice());
-
-            Product createdProduct = productService.save(product);
+            Product createdProduct = productService.createProduct(request);
             if (createdProduct != null) {
-                IntStream.range(0, imageIds.length).forEach(index -> {
-                    String imageId = imageIds[index];
-                    String imageUrl = imageUrls[index];
-                    ProductImage image = new ProductImage();
-                    image.setId(imageId);
-                    image.setImageUrl(imageUrl);
-                    image.setProduct(createdProduct);
-                    productService.createProductImage(image);
-                });
                 return new ResponseEntity<>("Created a successful Product", HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>("Failed to create Product", HttpStatus.BAD_REQUEST);
@@ -101,6 +65,7 @@ public class ProductController {
             return new ResponseEntity<>("Failed to create Product", HttpStatus.BAD_REQUEST);
         }
     }
+
     @GetMapping("/findByName")
     public ResponseEntity<List<Product>> findByName(
             @RequestParam(name = "productName") String productName,
@@ -131,21 +96,9 @@ public class ProductController {
         return new ResponseEntity<>(getPbyC, HttpStatus.OK);
     }
 
-    @PutMapping("/update/{id}/{categoryId}/{brandId}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Integer id,
-                                                 @PathVariable int categoryId,
-                                                 @PathVariable int brandId,
-                                                 @RequestBody Product productUpdate) {
-        Product product = productService.findById(id);
-        if (product == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        Category category = this.categoryService.get(categoryId);
-        Brand brand = this.brandService.get(brandId);
-        productUpdate.setCategory(category);
-        productUpdate.setBrand(brand);
-        productUpdate.setId(id);
-        productService.save(productUpdate);
-        return new ResponseEntity<>(productUpdate, HttpStatus.OK);
+    @PutMapping("/updateProduct/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable Integer id, @RequestBody ProductRequest productUpdate) throws ResourceNotFoundException {
+        Product updatedProduct = productService.updateProduct(id, productUpdate);
+        return ResponseEntity.ok(updatedProduct);
     }
 }
