@@ -65,12 +65,12 @@ public class JwtTokenUtil {
         Date expirationDate = this.extractClaim(token, Claims::getExpiration);
         return expirationDate.before(new Date());
     }
-    public String extractPhoneNumber(String token){
+    public String extractusername(String token){
 
         return extractClaim(token,Claims::getSubject);
     }
     public boolean validateToken (String token, UserDetails userDetails){
-        String phoneNumber = extractPhoneNumber(token);
+        String phoneNumber = extractusername(token);
         return phoneNumber.equals(userDetails.getUsername())
                 && !isTokenExpired(token);
     }

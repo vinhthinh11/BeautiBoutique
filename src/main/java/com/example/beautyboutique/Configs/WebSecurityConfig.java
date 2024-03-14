@@ -29,7 +29,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(requests -> {
                     requests
                                 .requestMatchers("/api/users/login").permitAll()
-                                .requestMatchers("/api/users/register").hasRole("ADMIN")
+                                .requestMatchers("/api/users/register").permitAll()
                                 .requestMatchers(HttpMethod.DELETE).permitAll()
                                 .requestMatchers(HttpMethod.POST).permitAll()
                                 .requestMatchers(HttpMethod.PUT).permitAll()
@@ -37,7 +37,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/blog/**").permitAll()
                                 .requestMatchers("/api/voucher/**").permitAll()
                                 .requestMatchers("/api/order/**").permitAll()
-                                .requestMatchers("/api/ship-detail/**").hasRole("USER")
+                                .requestMatchers("/api/ship-detail/**").permitAll()//.hasRole("USER")
                                 .anyRequest().authenticated();
                 });
         return http.build();

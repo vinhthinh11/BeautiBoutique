@@ -6,14 +6,18 @@ import com.example.beautyboutique.DTOs.Responses.ResponseDTO;
 import com.example.beautyboutique.DTOs.Responses.ResponseMessage;
 import com.example.beautyboutique.DTOs.Responses.ShipDetail.ResponseShipDetails;
 import com.example.beautyboutique.Models.ShipDetail;
+import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Services.ShipDetail.ShipDetailServiceImpl;
+import com.example.beautyboutique.Services.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.example.beautyboutique.Utils.ZaloAlgorithem.JwtUtil;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -22,9 +26,12 @@ public class ShipDetailController {
 
     @Autowired
     ShipDetailServiceImpl shipDetailService;
-
+    @Autowired
+    private UserService userService;
     @GetMapping(value = "/get-all")
-    public ResponseEntity<?> getShipDetails(@RequestParam(value = "userId") Integer userId) {
+    public ResponseEntity<?> getShipDetails(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        User user =  userService.getUserByUsername(JwtUtil.getUsernameFromJwt(token)).orElse(null);
+        Integer userId= user.getId();
         try {
             List<ShipDetail> shipDetails = shipDetailService.getShipDetailList(userId);
             return new ResponseEntity<>(new ResponseShipDetails(shipDetails), HttpStatus.OK);

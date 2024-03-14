@@ -48,8 +48,9 @@ public class UserServiceImpl implements  UserService {
                 .facebookAccountId(userDTO.getFacebookAccountId())
                 .googleAccountId(userDTO.getGoogleAccountId()).
                 build();
-        Role role = roleRepository.findById(userDTO.getRoleId())
-                .orElseThrow(() ->new DataNotFoundException("Role not found"));
+        Role role = new Role(); // Tạo một đối tượng Role mới
+        role.setRoleId(2); // Gán khóa chính của vai trò cố định
+        role.setRoleName("USER"); // Gán tên của vai trò cố định
         newUser.setRole(role);
         //kiem tra account id =, khong yeu cau password
         if(userDTO.getFacebookAccountId()==0 && userDTO.getGoogleAccountId()==0)
