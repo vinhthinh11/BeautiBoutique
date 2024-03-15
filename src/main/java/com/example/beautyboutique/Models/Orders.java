@@ -41,17 +41,22 @@ public class Orders {
     private Payment payment;
 
     @ManyToOne
+    @JoinColumn(name = "voucherId")
+    private Voucher voucher;
+
+    @ManyToOne
     @JoinColumn(name = "orderStatusId")
     private OrderStatus orderStatus;
 
     @OneToMany(mappedBy = "orders", fetch = FetchType.EAGER, orphanRemoval = true)
     private List<OrderDetail> ordersDetails;
 
-    public Orders(ShipDetail shipDetail, BigDecimal totalPrice, Delivery delivery, Payment payment, OrderStatus orderStatus) {
+    public Orders(ShipDetail shipDetail, BigDecimal totalPrice, Delivery delivery, Payment payment, OrderStatus orderStatus, Voucher voucher) {
         this.shipDetail  = shipDetail;
         this.totalPrice = totalPrice;
         this.delivery = delivery;
         this.payment = payment;
         this.orderStatus = orderStatus;
+        this.voucher = voucher;
     }
 }

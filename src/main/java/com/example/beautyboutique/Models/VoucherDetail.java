@@ -24,4 +24,9 @@ public class VoucherDetail {
     @JsonIgnore
     @JoinColumn(name = "voucherId")
     private Voucher voucher;
+
+    public VoucherDetail(User user, Voucher voucher) {
+        this.user = user;
+        this.voucher = voucher;
+    }
 }

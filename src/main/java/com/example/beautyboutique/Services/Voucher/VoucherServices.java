@@ -1,7 +1,9 @@
 package com.example.beautyboutique.Services.Voucher;
 
+import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Models.Voucher;
 import com.example.beautyboutique.Models.VoucherDetail;
+import com.example.beautyboutique.Repositories.UserRepository;
 import com.example.beautyboutique.Repositories.VoucherDetailRepository;
 import com.example.beautyboutique.Repositories.VoucherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,20 +14,42 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class VoucherServices implements VoucherService{
+public class VoucherServices implements VoucherService {
     @Autowired
     VoucherRepository voucherRepository;
 
     @Autowired
     VoucherDetailRepository voucherDetailRepository;
+
+
+    @Autowired
+    UserRepository userRepository;
+
+
     @Override
-    public List<Voucher> getAllVoucher() {
+    public List<Voucher> getAllVouchers() {
+        return voucherRepository.findAll();
+    }
+
+    @Override
+    public Boolean addVoucher(Integer userId, Integer voucherId) {
         try {
-            List<Voucher> voucherList = voucherRepository.findAll();
-            return voucherList;
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isEmpty())
+                return false;
+            Optional<Voucher> voucherOptional = voucherRepository.findById(voucherId);
+            if (voucherOptional.isEmpty())
+                return false;
+
+            User user = userOptional.get();
+            Voucher voucher = voucherOptional.get();
+
+            VoucherDetail voucherDetail = new VoucherDetail(user, voucher);
+            voucherDetailRepository.save(voucherDetail);
+            return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return new ArrayList<>();
+            return false;
         }
     }
 
@@ -33,6 +57,7 @@ public class VoucherServices implements VoucherService{
     public List<VoucherDetail> getListVouchersByUserId(Integer userId) {
         return voucherDetailRepository.findByUserId(userId);
     }
+
     @Override
     public Voucher getAVoucherId(Integer id) {
         try {
@@ -65,30 +90,32 @@ public class VoucherServices implements VoucherService{
             return false;
         }
     }
+
     @Override
-    public boolean getVoucherDetailByUserIdAndVoucherId(Integer userId , Integer voucherId){
+    public boolean getVoucherDetailByUserIdAndVoucherId(Integer userId, Integer voucherId) {
         try {
-            Optional<VoucherDetail> voucherDetail = voucherDetailRepository.findByUserIdAndVoucherId(userId,voucherId);
-            if(voucherDetail.isPresent()){
+            Optional<VoucherDetail> voucherDetail = voucherDetailRepository.findByUserIdAndVoucherId(userId, voucherId);
+            if (voucherDetail.isPresent()) {
                 return true;
-            }else {
+            } else {
                 return false;
             }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.println(" error : " + e.getMessage());
             return false;
         }
 
     }
+
     @Override
     public Voucher createVoucher(Voucher voucher) {
 
         return voucherRepository.save(voucher);
     }
+
     @Override
-    public  VoucherDetail saveVoucherForUser(VoucherDetail voucherDetail) {
-        return  voucherDetailRepository.save(voucherDetail);
+    public VoucherDetail saveVoucherForUser(VoucherDetail voucherDetail) {
+        return voucherDetailRepository.save(voucherDetail);
     }
 
     @Override

@@ -24,16 +24,17 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE).permitAll()
                                 .requestMatchers(HttpMethod.POST).permitAll()
                                 .requestMatchers(HttpMethod.GET).permitAll()
+                                .requestMatchers(HttpMethod.PUT).permitAll()
                                 .requestMatchers("/api/cart/**").permitAll()
                                 .requestMatchers("/api/blog/**").permitAll()
                                 .requestMatchers("/api/voucher/**").permitAll()
                                 .requestMatchers("/api/order/**").permitAll()
                                 .requestMatchers("/api/product/**").permitAll()
                                 .requestMatchers("/api/category/**").permitAll()
+                                .requestMatchers("/api/ship-detail/**").permitAll()
                                 .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
         return http.build();
     }
     @Bean

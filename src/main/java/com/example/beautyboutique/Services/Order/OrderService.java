@@ -7,7 +7,7 @@ import com.example.beautyboutique.DTOs.Responses.Order.PageOrder;
 import com.example.beautyboutique.DTOs.Responses.Order.UpdateOrder;
 
 public interface OrderService {
-        CreatedOrder createOrder(Integer userId, Integer shipDetailId, Integer deliveryId, Integer paymentId, Integer[] cartItemsId);
+        CreatedOrder createOrder(Integer userId, Integer shipDetailId, Integer deliveryId, Integer paymentId, Integer voucherId,Integer[] cartItemsId);
         PageOrder getOrderHistory(Integer  userId, Integer pageNo, Integer pageSize, String sortBy, String sortDir);
 
         CancelOrder cancelOrder(Integer userId, Integer orderId);
