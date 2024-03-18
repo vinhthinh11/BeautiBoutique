@@ -7,12 +7,8 @@ import lombok.*;
 import java.util.Date;
 
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-public class UserDTO {
+
+public class SignUpRequest {
     @JsonProperty("fullname")
     private String fullName;
 
@@ -38,4 +34,5 @@ public class UserDTO {
 
     @JsonProperty("role_id")
     private Integer roleId;
+
 }

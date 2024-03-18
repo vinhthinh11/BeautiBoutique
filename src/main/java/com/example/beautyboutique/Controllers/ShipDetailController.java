@@ -30,7 +30,7 @@ public class ShipDetailController {
     private UserService userService;
     @GetMapping(value = "/get-all")
     public ResponseEntity<?> getShipDetails(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
-        User user =  userService.getUserByUsername(JwtUtil.getUsernameFromJwt(token)).orElse(null);
+        User user =  userService.getUserByUsername(JwtUtil.getUsernameFromJwt(token));
         Integer userId= user.getId();
         try {
             List<ShipDetail> shipDetails = shipDetailService.getShipDetailList(userId);
