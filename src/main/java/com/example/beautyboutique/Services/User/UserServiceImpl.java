@@ -51,14 +51,13 @@ public class UserServiceImpl implements  UserService {
 
 
     @Override
-    public User saveafftercheck(User user) {
+    public User saveAfterCheck(User user) {
         if(userRepository.existsByUserName(user.getUserName())) {
             System.out.println("UserName Have Exits");
-            return  null;
+            return  user;
         }
             return userRepository.save(user);
     }
-    @Override
     public User save(User user) {
         return userRepository.save(user);
     }

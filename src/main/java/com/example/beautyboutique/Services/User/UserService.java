@@ -19,7 +19,7 @@ public interface UserService {
 
     User delete(Integer id);
 
-    User saveafftercheck (User user);
+    User saveAfterCheck (User user);
 
 
     User save(User user);
