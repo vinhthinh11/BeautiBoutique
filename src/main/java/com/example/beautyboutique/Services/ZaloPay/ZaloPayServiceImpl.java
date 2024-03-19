@@ -3,8 +3,7 @@ package com.example.beautyboutique.Services.ZaloPay;
 import com.example.beautyboutique.Configs.ZalopayConstant;
 import com.example.beautyboutique.DTOs.Requests.Payment.RefundRequestDTO;
 import com.example.beautyboutique.DTOs.Requests.Payment.RefundStatusRequestDTO;
-import com.example.beautyboutique.Models.CartItem;
-import com.example.beautyboutique.Models.User;
+import com.example.beautyboutique.Models.*;
 import com.example.beautyboutique.Repositories.CartItemRepository;
 import com.example.beautyboutique.Repositories.ProductRepository;
 import com.example.beautyboutique.Repositories.UserRepository;
@@ -21,6 +20,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.ExpressionException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -48,6 +48,7 @@ public class ZaloPayServiceImpl implements ZaloPayService {
 
 
     private final Logger logger = Logger.getLogger(this.getClass().getName());
+
     public String getCurrentTimeString() {
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));
         SimpleDateFormat fmt = new SimpleDateFormat("yyMMdd");
@@ -57,9 +58,9 @@ public class ZaloPayServiceImpl implements ZaloPayService {
 
     public BigDecimal sumPriceItem(Integer[] cartItemIds) {
         BigDecimal totalPrice = BigDecimal.ZERO;
-        for (Integer cartItemId : cartItemIds){
+        for (Integer cartItemId : cartItemIds) {
             Optional<CartItem> cartItemOptional = cartItemRepository.findById(cartItemId);
-            if(cartItemOptional.isPresent()) {
+            if (cartItemOptional.isPresent()) {
                 CartItem cartItem = cartItemOptional.get();
                 totalPrice = totalPrice.add(cartItem.getTotalPrice());
             }
@@ -67,9 +68,33 @@ public class ZaloPayServiceImpl implements ZaloPayService {
         return totalPrice;
     }
 
+    private Boolean checkQuantityInStock(Integer[] cartItemIds) {
+        Boolean[] isValid = {false};
+        for (Integer cartItemId : cartItemIds) {
+            cartItemRepository.findById(cartItemId).ifPresent(cartItem -> {
+                Product product = cartItem.getProduct();
+                Integer inStock = product.getQuantity();
+                Integer quantityBuy = cartItem.getQuantity();
+                // check quantity in stock
+                if (inStock - quantityBuy >= 0) {
+                    isValid[0] = true;
+                }
+            });
+        }
+        return isValid[0];
+    }
+
+
     @Override
-    public Map<String, Object> createOrder(Integer userId, Integer[] cartItemIds)  throws IOException, JSONException {
+    public Map<String, Object> createOrder(Integer userId, Integer[] cartItemIds) throws IOException, JSONException {
         Map<String, Object> resultMap = new HashMap<>();
+
+
+        if (!checkQuantityInStock(cartItemIds)) {
+            resultMap.put("returnmessage", "Not enough quantity!");
+            resultMap.put("returncode", -4);
+            return resultMap;
+        }
         try {
             Optional<User> userOptional = userRepository.findById(userId);
             if (userOptional.isEmpty()) {
@@ -78,31 +103,31 @@ public class ZaloPayServiceImpl implements ZaloPayService {
                 return resultMap;
             }
             User user = userOptional.get();
-            String appUser = user.getUserName();
-            String appTransId = getCurrentTimeString() +"_"+ new Date().getTime();
+            String appUser = user.getUsername();
+            String appTransId = getCurrentTimeString() + "_" + new Date().getTime();
 
             BigDecimal totalPrice = sumPriceItem(cartItemIds);
             System.out.println("totalPrice: " + totalPrice);
-            Map<String,Object> spa = new HashMap<String, Object>(){{
+            Map<String, Object> spa = new HashMap<String, Object>() {{
                 put("id", user.getId());
-                put("price",totalPrice);
+                put("price", totalPrice);
             }};
 
-            if(!appUser.isEmpty()){
-                Map<String, Object> order = new HashMap<String, Object>(){{
+            if (!appUser.isEmpty()) {
+                Map<String, Object> order = new HashMap<String, Object>() {{
                     put("appid", ZalopayConstant.APP_ID);
                     put("apptransid", appTransId); // translation missing: vi.docs.shared.sample_code.comments.app_trans_id
                     put("apptime", System.currentTimeMillis()); // miliseconds
                     put("appuser", appUser);
                     put("amount", totalPrice.longValue());
-                    put("description", "Beauty Boutique - Payment by zalopay#" + getCurrentTimeString() +"_"+ new Date().getTime());
+                    put("description", "Beauty Boutique - Payment by zalopay#" + getCurrentTimeString() + "_" + new Date().getTime());
                     put("bankcode", "zalopayapp");
                     put("item", new JSONObject(spa).toString());
                     put("embeddata", "{\"redirecturl\": \"http://localhost:8080/api/v1/callback\"}");
                 }};
 
-                String data = order.get("appid") +"|"+ order.get("apptransid") +"|"+ order.get("appuser") +"|"+ order.get("amount")
-                        +"|"+ order.get("apptime") +"|"+ order.get("embeddata") +"|"+ order.get("item") ;
+                String data = order.get("appid") + "|" + order.get("apptransid") + "|" + order.get("appuser") + "|" + order.get("amount")
+                        + "|" + order.get("apptime") + "|" + order.get("embeddata") + "|" + order.get("item");
                 order.put("mac", HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, ZalopayConstant.KEY1, data));
 
                 CloseableHttpClient client = HttpClients.createDefault();
@@ -124,7 +149,7 @@ public class ZaloPayServiceImpl implements ZaloPayService {
 
                 JSONObject jsonResult = new JSONObject(resultJsonStr.toString());
                 Map<String, Object> finalResult = new HashMap<>();
-                for (Iterator<String> it = jsonResult.keys(); it.hasNext();) {
+                for (Iterator<String> it = jsonResult.keys(); it.hasNext(); ) {
                     String key = it.next();
                     finalResult.put(key, jsonResult.get(key));
                 }
@@ -135,7 +160,7 @@ public class ZaloPayServiceImpl implements ZaloPayService {
             resultMap.put("returnmessage", "User not found!");
             resultMap.put("returncode", -1);
             return resultMap;
-        }catch (JSONException e) {
+        } catch (JSONException e) {
             logger.info(e.getMessage());
             resultMap.put("returnmessage", "JSONException!");
             resultMap.put("returncode", -1);
@@ -180,7 +205,7 @@ public class ZaloPayServiceImpl implements ZaloPayService {
 
     public Map<String, Object> statusOrder(String appTransId) throws URISyntaxException, IOException, JSONException {
 
-        String data = ZalopayConstant.APP_ID +"|"+ appTransId  +"|"+ ZalopayConstant.KEY1;
+        String data = ZalopayConstant.APP_ID + "|" + appTransId + "|" + ZalopayConstant.KEY1;
         String mac = HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, ZalopayConstant.KEY1, data);
 
         List<NameValuePair> params = new ArrayList<>();
@@ -217,18 +242,18 @@ public class ZaloPayServiceImpl implements ZaloPayService {
     }
 
     public Map<String, Object> sendRefund(RefundRequestDTO refundRequestDTO) throws JSONException, IOException {
-        Map<String, Object> order = new HashMap<String, Object>(){{
+        Map<String, Object> order = new HashMap<String, Object>() {{
             put("app_id", ZalopayConstant.APP_ID);
             put("zp_trans_id", refundRequestDTO.getZpTransId());
-            put("m_refund_id", getCurrentTimeString() +" "+ ZalopayConstant.APP_ID +" "+
+            put("m_refund_id", getCurrentTimeString() + " " + ZalopayConstant.APP_ID + " " +
                     System.currentTimeMillis() + " " + (111 + new Random().nextInt(888)));
             put("timestamp", System.currentTimeMillis());
             put("amount", refundRequestDTO.getAmount());
             put("description", refundRequestDTO.getDescription());
         }};
 
-        String data = order.get("app_id") +"|"+ order.get("zp_trans_id") +"|"+ order.get("amount")
-                +"|"+ order.get("description") +"|"+ order.get("timestamp");
+        String data = order.get("app_id") + "|" + order.get("zp_trans_id") + "|" + order.get("amount")
+                + "|" + order.get("description") + "|" + order.get("timestamp");
         order.put("mac", HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, ZalopayConstant.KEY1, data));
 
         CloseableHttpClient client = HttpClients.createDefault();
@@ -265,7 +290,7 @@ public class ZaloPayServiceImpl implements ZaloPayService {
 
 //        String mRefundId = "190308_2553_123456";
         String timestamp = Long.toString(System.currentTimeMillis()); // miliseconds
-        String data = ZalopayConstant.APP_ID +"|"+ refundStatusDTO.getRefundId()  +"|"+ timestamp; // app_id|m_refund_id|timestamp
+        String data = ZalopayConstant.APP_ID + "|" + refundStatusDTO.getRefundId() + "|" + timestamp; // app_id|m_refund_id|timestamp
         String mac = HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, ZalopayConstant.KEY1, data);
 
         List<NameValuePair> params = new ArrayList<>();

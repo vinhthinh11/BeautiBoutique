@@ -7,9 +7,10 @@ import com.example.beautyboutique.Models.VoucherDetail;
 import java.util.List;
 
 public interface VoucherService {
-    public List<Voucher> getAllVoucher();
 
     List<VoucherDetail> getListVouchersByUserId(Integer userId);
+    List<Voucher> getAllVouchers();
+    Boolean addVoucher( Integer userId, Integer voucherId);
     public boolean getVoucherDetailByUserIdAndVoucherId(Integer userId , Integer voucherId);
     public Voucher getAVoucherId(Integer id);
     public boolean deleteVoucher(Integer id );
