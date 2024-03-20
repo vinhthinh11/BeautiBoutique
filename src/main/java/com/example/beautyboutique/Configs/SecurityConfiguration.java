@@ -17,6 +17,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -36,6 +39,8 @@ public class SecurityConfiguration {
                             .requestMatchers("/api/cart/**").permitAll()
                             .requestMatchers("/api/blog/**").permitAll()
                             .requestMatchers("/api/voucher/**").permitAll()
+                            .requestMatchers("/api/product/**").permitAll()
+                            .requestMatchers("/api/category/**").permitAll()
                             .requestMatchers("/api/order/**").permitAll()
                             .requestMatchers("/api/ship-detail/**").permitAll()//.hasRole("USER")
                             .anyRequest().authenticated())
@@ -63,6 +68,18 @@ public class SecurityConfiguration {
     {
         return config.getAuthenticationManager();
 
+    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("http://localhost:3000"); // Add the origins you need
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("*");
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
 
