@@ -15,6 +15,7 @@ public class SignUpRequest {
     @JsonProperty("username")
     @NotBlank(message = "username is required")
     private String username;
+    private String email;
 
     private String address;
 

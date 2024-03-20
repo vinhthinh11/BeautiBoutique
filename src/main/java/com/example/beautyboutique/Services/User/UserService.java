@@ -1,6 +1,5 @@
 package com.example.beautyboutique.Services.User;
 
-import com.example.beautyboutique.Exceptions.DataNotFoundException;
 import com.example.beautyboutique.Models.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -11,4 +10,5 @@ public interface UserService {
     public User getUserByUsername(String username);
     UserDetailsService userDetailsService ();
     Optional<User> getUserById(Integer userId);
+
 }
