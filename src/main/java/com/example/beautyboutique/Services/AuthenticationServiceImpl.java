@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -79,6 +81,29 @@ public class AuthenticationServiceImpl  implements AuthenticationService{
             return  jwtAuthenticationResponse;
         }
         return null;
+    }
+    public String resetpass(String username){
+        Optional<User> Opuser = userRepository.findByUsername(username);
+        User user = Opuser.orElseThrow(() -> new IllegalArgumentException("Người dùng không tồn tại"));
+        String email= user.getEmail();
+        if (email == null) {
+            throw new IllegalArgumentException("user không tồn tại");
+        }
+        String newPassword = generateRandomPassword();
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+        return  newPassword;
+    }
+    private String generateRandomPassword() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+        return sb.toString();
     }
 
 

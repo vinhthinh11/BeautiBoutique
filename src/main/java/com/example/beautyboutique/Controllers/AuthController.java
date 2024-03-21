@@ -54,7 +54,9 @@ public class AuthController {
     public ResponseEntity<String> reset(
             @RequestParam(name="username") String username)
     {
-        mailService.sendEmail(username);
+        String subject= "Khoi phuc mat khau:";
+        String newpass = "new password: " +  authenticationService.resetpass(username);
+        mailService.sendEmail(username,subject,newpass);
         return  ResponseEntity.ok("ok");
     }
 
