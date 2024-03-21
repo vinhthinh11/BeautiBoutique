@@ -21,8 +21,11 @@ public class AuthController {
 
     private final EmailService mailService;
     @PostMapping("/register")
-    public ResponseEntity <?> signup(@RequestBody SignUpRequest signUpRequest) throws DataNotFoundException {
+    public ResponseEntity <?> signup(@RequestBody SignUpRequest signUpRequest){
         try {
+            if(!signUpRequest.getPassword().equals(signUpRequest.getRetypePassword())){
+                return ResponseEntity.badRequest().body("pass word does not match");
+            }
             User user =  authenticationService.signup(signUpRequest);
             return ResponseEntity.ok(user);
         }catch (Exception e){

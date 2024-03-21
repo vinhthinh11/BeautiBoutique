@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.HashMap;
 
 @Service
@@ -24,7 +25,7 @@ public class AuthenticationServiceImpl  implements AuthenticationService{
     private final JWTService jwtService;
     private final JavaMailSender mailSender;
     @Override
-    public User signup(SignUpRequest signUpRequest) throws DataNotFoundException {
+    public User signup(SignUpRequest signUpRequest) {
             String username =signUpRequest.getUsername();
             if(userRepository.existsByUsername(username)){
                 throw new DataIntegrityViolationException("username already exists");
@@ -35,22 +36,23 @@ public class AuthenticationServiceImpl  implements AuthenticationService{
             }
 
             User user = new User();
-            user.setFullName(signUpRequest.getFullName());
+            user.setFullName("");
             user.setUsername(username);
             user.setEmail(email);
-            user.setAddress(signUpRequest.getAddress());
+            user.setAddress("");
             user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-            user.setDateOfBirth(signUpRequest.getDateOfBirth());
-            user.setFacebookAccountId(signUpRequest.getFacebookAccountId());
-            user.setGoogleAccountId(signUpRequest.getGoogleAccountId());
+            user.setDateOfBirth(new Date(System.currentTimeMillis()));
             Role role = new Role();
             role.setRoleId(2);
             role.setRoleName("USER");
             user.setRole(role);
             return userRepository.save(user);
     }
-    public JwtAuthenticationResponse signin(SignInRequest signInRequest){
+    public JwtAuthenticationResponse signin(SignInRequest signInRequest) throws Exception{
         String username =signInRequest.getUsername();
+        if(username.isEmpty()) {
+            throw new DataNotFoundException("INVALID User");
+        }
         if(!userRepository.existsByUsername(username)){
             throw new DataIntegrityViolationException("username does not exist");
         }

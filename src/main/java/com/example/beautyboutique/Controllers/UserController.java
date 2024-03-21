@@ -16,14 +16,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    @GetMapping("")//get-user
-    public ResponseEntity<String> gSetuser(){
-        return ResponseEntity.ok("hiadmin");
-    }
     @GetMapping("/getuser")
-    public ResponseEntity<User> getuser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token){
+    public ResponseEntity<?> getuser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token){
         User user =  userService.getUserByUsername(JwtUtil.getUsernameFromJwt(token));
-        Integer userId= user.getId();
-        return ResponseEntity.ok(user);
+        String username = user.getUsername();
+        String role=user.getRole().getRoleName();
+        return ResponseEntity.ok("username :"+ username +"  role:ROLE_"+ role);
     }
 }
