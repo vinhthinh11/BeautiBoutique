@@ -105,6 +105,13 @@ public class AuthenticationServiceImpl  implements AuthenticationService{
         }
         return sb.toString();
     }
+    public String getEmail(String username) {
+        Optional<User> Opuser = userRepository.findByUsername(username);
+        User user = Opuser.orElseThrow(() -> new IllegalArgumentException("Người dùng không tồn tại"));
+        String email= user.getEmail();
+        return email;
+    }
+
 
 
 }

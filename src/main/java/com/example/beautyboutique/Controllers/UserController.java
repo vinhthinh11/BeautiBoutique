@@ -23,6 +23,7 @@ public class UserController {
         String username = user.getUsername();
         Integer userId= user.getId();
         String roleName=user.getRole().getRoleName();
-        return ResponseEntity.ok(new UserDto(userId,username,roleName));
+        String email = user.getEmail();
+        return ResponseEntity.ok(new UserDto(userId,username,roleName,email));
     }
 }

@@ -20,10 +20,7 @@ public class EmailServiceImpl implements EmailService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
-    public  String sendEmail(String username,String subject,String body){
-        Optional<User> Opuser = userRepository.findByUsername(username);
-        User user = Opuser.orElseThrow(() -> new IllegalArgumentException("Người dùng không tồn tại"));
-        String email= user.getEmail();
+    public  String sendEmail(String email,String subject,String body){
         SimpleMailMessage message =new SimpleMailMessage();
         message.setTo(email);
         message.setFrom("hnphong37m1@gmail.com");
