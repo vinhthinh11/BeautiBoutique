@@ -1,5 +1,6 @@
 package com.example.beautyboutique.Services.User;
 
+import com.example.beautyboutique.DTOs.Requests.User.UserRequest;
 import com.example.beautyboutique.Models.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -18,7 +19,7 @@ public interface UserService {
 
     User saveAfterCheck (User user);
 
-    User update(Integer id,User UserUpdate);
+    User update(Integer id, UserRequest userUpdate);
 
 
     User save(User user);

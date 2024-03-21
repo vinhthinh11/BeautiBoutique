@@ -72,7 +72,7 @@ public class ProductServiceImpl implements ProductService {
                 throw new ResourceNotFoundException("Product with id " + id + " not found on the requested page");
             }
 
-            return products.get(id - 1); // id - 1 vì id bắt đầu từ 1 trong yêu cầu người dùng, nhưng danh sách sản phẩm bắt đầu từ index 0
+            return products.get(id - 1);
         } catch (NullPointerException e) {
             throw new IllegalArgumentException("Invalid input parameters");
         }
