@@ -14,6 +14,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,20 +74,29 @@ public class VoucherController {
     })
     @ResponseBody
     ResponseEntity<?> createVoucher(Voucher voucher) {
-
         try {
-
-            Voucher createdVoucher = voucherServices.createVoucher(voucher);
-            if (createdVoucher != null) {
-                return new ResponseEntity<>("Created a voucher successfully", HttpStatus.CREATED);
+            LocalDate startDate = voucher.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate endDate = voucher.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (startDate.isBefore(endDate)) {
+                if (endDate.minusDays(1).isAfter(startDate)) {
+                    Voucher createdVoucher = voucherServices.createVoucher(voucher);
+                    if (createdVoucher != null) {
+                        return new ResponseEntity<>("Created a voucher successfully", HttpStatus.CREATED);
+                    } else {
+                        return new ResponseEntity<>("Failed to create voucher", HttpStatus.BAD_REQUEST);
+                    }
+                } else {
+                    return new ResponseEntity<>("Start date and end date must be at least 1 day apart", HttpStatus.BAD_REQUEST);
+                }
             } else {
-                return new ResponseEntity<>("Failed to create comment", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("End date must be after start date", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseEntity<>("Internal server failed", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @PostMapping(value = "/save-voucher-for-user")
     ResponseEntity<?> saveVoucher(@RequestParam(value = "voucherId") Integer voucherId,

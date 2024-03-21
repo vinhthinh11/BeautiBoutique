@@ -71,9 +71,10 @@ public class CartController {
     }
     @PostMapping(value = "/add-to-cart")
     public ResponseEntity<?> addToCart(@RequestParam(value = "userId") Integer userId ,
-                                       @RequestParam(value = "productId") Integer productId){
+                                       @RequestParam(value = "productId") Integer productId,
+                                       @RequestParam(value = "quantity") Integer quantity){
         try {
-            ResponseDTO addCart = cartService.addToCard(userId,productId);
+            ResponseDTO addCart = cartService.addToCard(userId,productId,quantity);
             if (addCart.getIsSuccess()){
                 return new ResponseEntity<>(addCart.getMessage(),HttpStatus.OK);
             }
