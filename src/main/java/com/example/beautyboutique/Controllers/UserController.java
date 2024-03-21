@@ -1,6 +1,7 @@
 package com.example.beautyboutique.Controllers;
 
 import com.example.beautyboutique.DTOs.Requests.User.UserRequest;
+import com.example.beautyboutique.Models.Product;
 import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Services.JWTService;
 import com.example.beautyboutique.Services.User.UserService;
@@ -62,11 +63,10 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/deleteUser")
-    public ResponseEntity<String> deleteUser(HttpServletRequest request) {
+    @DeleteMapping("/deleteUser/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
         try {
-            Integer userId = jwtService.getUserIdByToken(request);
-            User user = userService.delete(userId);
+            User userDelete = userService.delete(id);
             return ResponseEntity.ok("User  deleted successfully");
         } catch (Exception e) {
             System.out.println(e.getMessage());
