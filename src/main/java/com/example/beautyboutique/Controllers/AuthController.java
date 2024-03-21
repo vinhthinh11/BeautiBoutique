@@ -56,7 +56,8 @@ public class AuthController {
     {
         String subject= "Khoi phuc mat khau:";
         String newpass = "new password: " +  authenticationService.resetpass(username);
-        mailService.sendEmail(username,subject,newpass);
+        String email = authenticationService.getEmail(username);
+        mailService.sendEmail(email,subject,newpass);
         return  ResponseEntity.ok("ok");
     }
 
