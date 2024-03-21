@@ -1,6 +1,7 @@
 package com.example.beautyboutique.Controllers;
 
 
+import com.example.beautyboutique.DTOs.UserDto;
 import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Services.User.UserService;
 import com.example.beautyboutique.Utils.ZaloAlgorithem.JwtUtil;
@@ -17,10 +18,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
     @GetMapping("/getuser")
-    public ResponseEntity<?> getuser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token){
+    public ResponseEntity<UserDto> getuser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token){
         User user =  userService.getUserByUsername(JwtUtil.getUsernameFromJwt(token));
         String username = user.getUsername();
-        String role=user.getRole().getRoleName();
-        return ResponseEntity.ok("username :"+ username +"  role:ROLE_"+ role);
+        Integer userId= user.getId();
+        String roleName=user.getRole().getRoleName();
+        return ResponseEntity.ok(new UserDto(userId,username,roleName));
     }
 }

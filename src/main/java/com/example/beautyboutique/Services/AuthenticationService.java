@@ -8,5 +8,5 @@ public interface AuthenticationService {
     User signup(SignUpRequest signUpRequest);
     JwtAuthenticationResponse signin(SignInRequest signInRequest) throws Exception;
     JwtAuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
-
+    String resetpass(String username);
 }
