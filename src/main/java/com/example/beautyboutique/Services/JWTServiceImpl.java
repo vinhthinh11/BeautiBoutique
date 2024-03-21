@@ -37,7 +37,8 @@ public class JWTServiceImpl implements JWTService {
                 .setExpiration(new Date(System.currentTimeMillis()+604800000))
                 .signWith(getSiginKey(),SignatureAlgorithm.HS256)
                 .compact();   }
-    private   <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+
+    private  <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = this.extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
@@ -53,7 +54,6 @@ public class JWTServiceImpl implements JWTService {
                 .getBody();
     }
     public String extractUserName(String token){
-
         return extractClaim(token,Claims::getSubject);
     }
     public boolean isTokenExpired(String token) {
@@ -64,5 +64,4 @@ public class JWTServiceImpl implements JWTService {
         final  String username = extractUserName(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
-
 }
