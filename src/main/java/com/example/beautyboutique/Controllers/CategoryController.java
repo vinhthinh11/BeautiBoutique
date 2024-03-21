@@ -11,7 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin("*")
 @Controller
 @RequestMapping("/api/category")
 public class CategoryController {
@@ -66,7 +66,7 @@ public class CategoryController {
      public ResponseEntity<Category> delete(@PathVariable Integer id) {
           Category deletedCategory = categoryService.delete(id);
           return new ResponseEntity<>(deletedCategory, HttpStatus.NO_CONTENT);
-     }
+          }
      @GetMapping("/get/{id}")
      public  ResponseEntity<Category> get(@PathVariable Integer id) {
           Category getCategory = categoryService.get(id);
