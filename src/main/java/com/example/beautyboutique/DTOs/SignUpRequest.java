@@ -15,6 +15,7 @@ public class SignUpRequest {
     @JsonProperty("username")
     @NotBlank(message = "username is required")
     private String username;
+    private String email;
 
     private String address;
 
@@ -25,12 +26,6 @@ public class SignUpRequest {
 
     @JsonProperty("date_of_birth")
     private Date dateOfBirth;
-
-    @JsonProperty("facebook_account_id")
-    private int facebookAccountId;
-
-    @JsonProperty("google_account_id")
-    private int googleAccountId;
 
     @JsonProperty("role_id")
     private Integer roleId;

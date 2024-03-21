@@ -31,8 +31,9 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(requests ->
                     requests
                             .requestMatchers("/api/auth/login").permitAll()
-                            .requestMatchers("/api/users/**").hasAnyRole("USER")
+                            .requestMatchers("/api/users/**").permitAll()
                             .requestMatchers("/api/auth/register").permitAll()
+                            .requestMatchers("/api/auth/forgot").permitAll()
                             .requestMatchers("/api/cart/**").permitAll()
                             .requestMatchers("/api/blog/**").permitAll()
                             .requestMatchers("/api/voucher/**").permitAll()
@@ -67,6 +68,5 @@ public class SecurityConfiguration {
         return config.getAuthenticationManager();
 
     }
-
 
 }
