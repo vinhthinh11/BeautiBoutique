@@ -27,7 +27,7 @@ public class JWTServiceImpl implements JWTService {
 
             return Jwts.builder().setSubject(userDetails.getUsername())
                     .setIssuedAt(new Date(System.currentTimeMillis()))
-                    .setExpiration(new Date(System.currentTimeMillis()+1000*60*24))
+                    .setExpiration(new Date(System.currentTimeMillis()+1000*60))
                     .signWith(getSiginKey(),SignatureAlgorithm.HS256)
                     .compact();
     }
@@ -36,8 +36,7 @@ public class JWTServiceImpl implements JWTService {
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis()+604800000))
                 .signWith(getSiginKey(),SignatureAlgorithm.HS256)
-                .compact();
-    }
+                .compact();   }
     private   <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = this.extractAllClaims(token);
         return claimsResolver.apply(claims);
