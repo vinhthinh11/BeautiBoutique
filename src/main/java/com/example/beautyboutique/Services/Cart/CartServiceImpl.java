@@ -48,15 +48,12 @@ public class CartServiceImpl implements CartService {
     @Override
     public PageCart getCartByUserId(Integer userId, Integer pageNo, Integer pageSize) {
         try {
-            Pageable pageable = PageRequest.of(pageNo, pageSize);
             Optional<Cart> cartOptional = cartRepository.findByUserId(userId);
             if (cartOptional.isPresent()) {
                 Integer cartId = cartOptional.get().getId();
-                Page<CartItem> pageCart = cartItemRepository.getCartItemsByCart_Id(cartId, pageable);
-                Integer totalPages = pageCart.getTotalPages();
-                List<CartItem> cartItems = pageCart.getContent();
+                List<CartItem> cartItems = cartItemRepository.getCartItemsByCart_Id(cartId);
                 BigDecimal totalPrice = calculateTotalPrice(cartItems);
-                return new PageCart(totalPrice, totalPages, cartItems);
+                return new PageCart(totalPrice, 1, cartItems);
             } else {
                 return new PageCart();
             }
