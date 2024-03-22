@@ -21,6 +21,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -38,12 +40,13 @@ public class SecurityConfiguration {
                             .requestMatchers(HttpMethod.GET).permitAll()
                             .requestMatchers(HttpMethod.PUT).permitAll()
                             .requestMatchers("/api/auth/**").permitAll()
-                            .requestMatchers("/api/users/**").hasAnyRole("USER")
+                            .requestMatchers("/api/users/**").permitAll()
                             .requestMatchers("/api/cart/**").permitAll()
                             .requestMatchers("/api/blog/**").permitAll()
                             .requestMatchers("/api/voucher/**").permitAll()
+                            .requestMatchers("/api/voucher/**").permitAll()
                             .requestMatchers("/api/order/**").permitAll()
-                            .requestMatchers("/api/ship-detail/**").permitAll()//.hasRole("USER")
+                            .requestMatchers("/api/ship-detail/**").permitAll()
                             .anyRequest().authenticated())
                 .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
@@ -71,17 +74,17 @@ public class SecurityConfiguration {
     }
 
         @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000"); // Add the origins you need
-        configuration.addAllowedHeader("*");
-        configuration.addAllowedMethod("*");
-        configuration.setAllowCredentials(true);
+        public CorsConfigurationSource corsConfigurationSource() {
+            CorsConfiguration configuration = new CorsConfiguration();
+            configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000*")); // Thay vì sử dụng allowedOrigins("*"), bạn sử dụng allowedOriginPatterns và chỉ định pattern cho các origin cụ thể.
+            configuration.addAllowedHeader("*");
+            configuration.addAllowedMethod("*");
+            configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+            UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+            source.registerCorsConfiguration("/**", configuration);
+            return source;
+        }
 
 
 }

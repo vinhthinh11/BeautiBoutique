@@ -2,30 +2,40 @@ package com.example.beautyboutique.Services;
 
 import com.example.beautyboutique.Exceptions.InvalidParamException;
 import com.example.beautyboutique.Models.User;
+import com.example.beautyboutique.Repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.SpringVersion;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.awt.image.TileObserver;
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
 public class JWTServiceImpl implements JWTService {
     @Value("${jwt.secretKey}")
     private String secretKey;
-    public  String generateToken(UserDetails userDetails)  {
+    @Autowired
+    UserRepository userRepository;
 
+    public  String generateToken(UserDetails userDetails)  {
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        List<String> roles = new ArrayList<>();
+        for (GrantedAuthority authority : authorities) {
+            roles.add(authority.getAuthority());
+        }
             return Jwts.builder().setSubject(userDetails.getUsername())
+                    .claim("ROLE", roles)
                     .setIssuedAt(new Date(System.currentTimeMillis()))
                     .setExpiration(new Date(System.currentTimeMillis()+1000*60*24))
                     .signWith(getSiginKey(),SignatureAlgorithm.HS256)
@@ -62,5 +72,20 @@ public class JWTServiceImpl implements JWTService {
     public boolean isTokenValid(String token ,UserDetails userDetails) {
         final  String username = extractUserName(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+    public Integer getUserIdByToken(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+
+        if (token != null && token.startsWith("Bearer ")) {
+            // Remove "Bearer " prefix
+            token = token.substring(7);
+            String userName = extractClaim(token, Claims::getSubject);
+            Optional<User> userOptional = userRepository.findByUsername(userName);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                return user.getId();
+            }
+        }
+        return -1;
     }
 }

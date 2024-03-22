@@ -6,6 +6,7 @@ import com.example.beautyboutique.DTOs.Responses.ResponseDTO;
 import com.example.beautyboutique.Models.Cart;
 import com.example.beautyboutique.Models.CartItem;
 import com.example.beautyboutique.Services.Cart.CartServiceImpl;
+import com.example.beautyboutique.Services.JWTServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,8 @@ public class CartController {
 
     @Autowired
     CartServiceImpl cartService;
+    @Autowired
+    JWTServiceImpl jwtService;
 
     @GetMapping(value = "/get-cart")
     public ResponseEntity<?> getCart(@RequestParam(value = "userId", required = true) Integer userId,
@@ -70,10 +73,11 @@ public class CartController {
         }
     }
     @PostMapping(value = "/add-to-cart")
-    public ResponseEntity<?> addToCart(@RequestParam(value = "userId") Integer userId ,
+    public ResponseEntity<?> addToCart(HttpServletRequest requestToken ,
                                        @RequestParam(value = "productId") Integer productId,
                                        @RequestParam(value = "quantity") Integer quantity){
         try {
+            Integer userId = jwtService.getUserIdByToken(requestToken);
             ResponseDTO addCart = cartService.addToCard(userId,productId,quantity);
             if (addCart.getIsSuccess()){
                 return new ResponseEntity<>(addCart.getMessage(),HttpStatus.OK);

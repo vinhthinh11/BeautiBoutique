@@ -6,12 +6,15 @@ import com.example.beautyboutique.DTOs.Responses.Voucher.VoucherOfUser;
 import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Models.Voucher;
 import com.example.beautyboutique.Models.VoucherDetail;
+import com.example.beautyboutique.Services.JWTServiceImpl;
 import com.example.beautyboutique.Services.User.UserService;
 import com.example.beautyboutique.Services.Voucher.VoucherServices;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,17 +23,20 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/voucher")
+@CrossOrigin("*")
 public class VoucherController {
     @Autowired
     VoucherServices voucherServices;
     @Autowired
     UserService userService;
+    @Autowired
+    JWTServiceImpl jwtService;
 
     @GetMapping(value = "/get-voucher")
-    public ResponseEntity<?> getVouchers(@RequestParam(value = "userId", required = false) Integer userId) {
+    public ResponseEntity<?> getVouchers(HttpServletRequest requestToken) {
         try {
+            Integer userId = jwtService.getUserIdByToken(requestToken);
             if (userId == null) {
                 List<Voucher> listVouchers = voucherServices.getAllVouchers();
                 return new ResponseEntity<>(new AllVouchers(0, "Get vouchers successfully!", listVouchers), HttpStatus.OK);
@@ -43,9 +49,10 @@ public class VoucherController {
     }
 
     @PostMapping(value = "add-voucher")
-    public ResponseEntity<?> addVoucher(@RequestParam(value = "userId", required = false) Integer userId,
+    public ResponseEntity<?> addVoucher(HttpServletRequest requestToken,
                                         @RequestParam(value = "voucherId", required = false) Integer voucherId) {
         try {
+            Integer userId = jwtService.getUserIdByToken(requestToken);
             Boolean isAddVoucher = voucherServices.addVoucher(userId, voucherId);
             if (!isAddVoucher)
                 return new ResponseEntity<>("Add vouchers successfully!", HttpStatus.CREATED);
@@ -65,7 +72,7 @@ public class VoucherController {
             return new ResponseEntity<>("Retrieving information failed", HttpStatus.BAD_REQUEST);
         }
     }
-
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping(value = "/create-voucher", consumes = {
             MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_FORM_URLENCODED_VALUE
@@ -100,9 +107,10 @@ public class VoucherController {
 
     @PostMapping(value = "/save-voucher-for-user")
     ResponseEntity<?> saveVoucher(@RequestParam(value = "voucherId") Integer voucherId,
-                                  @RequestParam(value = "userId") Integer userId) {
+                                  HttpServletRequest requestToken) {
 
         try {
+            Integer userId = jwtService.getUserIdByToken(requestToken);
             boolean isSave = voucherServices.getVoucherDetailByUserIdAndVoucherId(userId, voucherId);
             if (isSave) {
                 return new ResponseEntity<>("You have already saved this voucher", HttpStatus.OK);
@@ -152,6 +160,7 @@ public class VoucherController {
         }
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping(value = "/delete-voucher")
     public ResponseEntity<?> deleteComment(@RequestParam(value = "id") Integer id) {
         try {
@@ -164,6 +173,7 @@ public class VoucherController {
             }
             return new ResponseEntity<>("Delete voucher fail!", HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
+            System.out.printf(e.getMessage());
             return new ResponseEntity<>("Internal server failed", HttpStatus.BAD_REQUEST);
         }
     }
