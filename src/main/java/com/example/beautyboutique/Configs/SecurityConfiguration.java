@@ -43,7 +43,7 @@ public class SecurityConfiguration {
                             .requestMatchers("/api/blog/**").permitAll()
                             .requestMatchers("/api/voucher/**").permitAll()
                             .requestMatchers("/api/order/**").permitAll()
-                            .requestMatchers("/api/ship-detail/**").permitAll()//.hasRole("USER")
+                            .requestMatchers("/api/ship-detail/**").permitAll()
                             .anyRequest().authenticated())
                 .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
