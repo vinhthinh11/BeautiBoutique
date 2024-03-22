@@ -6,8 +6,10 @@ import com.example.beautyboutique.DTOs.Responses.Voucher.VoucherOfUser;
 import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Models.Voucher;
 import com.example.beautyboutique.Models.VoucherDetail;
+import com.example.beautyboutique.Services.JWTServiceImpl;
 import com.example.beautyboutique.Services.User.UserService;
 import com.example.beautyboutique.Services.Voucher.VoucherServices;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,16 +28,17 @@ public class VoucherController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    JWTServiceImpl jwtService;
+
     @GetMapping(value = "/get-voucher")
-    public ResponseEntity<?> getVouchers(@RequestParam(value = "userId", required = false) Integer userId) {
+    public ResponseEntity<?> getVouchers(HttpServletRequest request) {
         try {
-            if (userId == null) {
-                List<Voucher> listVouchers = voucherServices.getAllVouchers();
-                return new ResponseEntity<>(new AllVouchers(0, "Get vouchers successfully!", listVouchers), HttpStatus.OK);
-            }
+            Integer userId = jwtService.getUserIdByToken(request);
             List<VoucherDetail> listVouchers = voucherServices.getListVouchersByUserId(userId);
             return new ResponseEntity<>(new VoucherOfUser(0, "Get vouchers of user successfully!", listVouchers), HttpStatus.OK);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return new ResponseEntity<>("Get vouchers fail!", HttpStatus.BAD_REQUEST);
         }
     }

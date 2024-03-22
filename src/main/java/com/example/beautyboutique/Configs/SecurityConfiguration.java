@@ -42,7 +42,7 @@ public class SecurityConfiguration {
                             .requestMatchers("/api/voucher/**").permitAll()
                             .requestMatchers("/api/voucher/**").permitAll()
                             .requestMatchers("/api/order/**").permitAll()
-                            .requestMatchers("/api/ship-detail/get-all").hasRole("ADMIN")
+                            .requestMatchers("/api/ship-detail/**").permitAll()
                             .anyRequest().authenticated())
                 .sessionManagement(manager->manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(

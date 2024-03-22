@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
         if (users.isEmpty()) {
             throw new ResourceNotFoundException("User with name " + userName + " not found");
         }
+
         return users;
     }
 
