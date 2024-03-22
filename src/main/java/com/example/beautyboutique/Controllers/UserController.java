@@ -1,9 +1,10 @@
 package com.example.beautyboutique.Controllers;
 
-
 import com.example.beautyboutique.DTOs.UserDto;
-import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Services.User.UserService;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Utils.ZaloAlgorithem.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 public class UserController {
+
     private final UserService userService;
+
     @GetMapping("/getuser")
     public ResponseEntity<UserDto> getuser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token){
         User user =  userService.getUserByUsername(JwtUtil.getUsernameFromJwt(token));

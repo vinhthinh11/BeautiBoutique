@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthenticationService authenticationService;
@@ -32,6 +32,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
     @PostMapping("/login")
     public ResponseEntity<?> siginin(
             @RequestBody SignInRequest signInRequest){
@@ -44,11 +46,12 @@ public class AuthController {
     }
 
 
+
+
     @PostMapping("/refresh")
     public ResponseEntity<JwtAuthenticationResponse> refresh(
-            @RequestBody RefreshTokenRequest refreshTokenRequest)
-    {
-        return  ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
+            @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
     }
     @PostMapping("/forgot")
     public ResponseEntity<String> reset(

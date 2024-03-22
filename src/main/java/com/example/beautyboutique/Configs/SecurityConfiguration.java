@@ -17,6 +17,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -36,6 +39,7 @@ public class SecurityConfiguration {
                             .requestMatchers("/api/auth/forgot").permitAll()
                             .requestMatchers("/api/cart/**").permitAll()
                             .requestMatchers("/api/blog/**").permitAll()
+                            .requestMatchers("/api/voucher/**").permitAll()
                             .requestMatchers("/api/voucher/**").permitAll()
                             .requestMatchers("/api/order/**").permitAll()
                             .requestMatchers("/api/product/**").permitAll()
@@ -66,7 +70,6 @@ public class SecurityConfiguration {
             throws  Exception
     {
         return config.getAuthenticationManager();
-
     }
 
 }

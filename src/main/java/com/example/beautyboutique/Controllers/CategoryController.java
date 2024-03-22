@@ -1,8 +1,7 @@
 package com.example.beautyboutique.Controllers;
 
 import com.example.beautyboutique.Models.Category;
-import com.example.beautyboutique.Models.Product;
-import com.example.beautyboutique.Payload.Response.ResponseMessage;
+import com.example.beautyboutique.DTOs.Response.ResponseMessage;
 import com.example.beautyboutique.Services.Category.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,8 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-@CrossOrigin("*")
 @Controller
+@CrossOrigin("*")
 @RequestMapping("/api/category")
 public class CategoryController {
      @Autowired
