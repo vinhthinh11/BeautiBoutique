@@ -96,24 +96,17 @@ public class JWTServiceImpl implements JWTService {
         return -1;
     }
     public boolean isAdmin(HttpServletRequest request){
-        // Lấy token từ header của request
         String token = request.getHeader("Authorization");
-
         if (token != null && token.startsWith("Bearer ")) {
-            // Remove "Bearer " prefix
             token = token.substring(7);
             String userName = extractClaim(token, Claims::getSubject);
             Optional<User> userOptional = userRepository.findByUsername(userName);
-
-                // Kiểm tra nếu role ID là admin
                 if (userOptional.isPresent()) {
                     User user = userOptional.get();
-//                    Role role = user.getRole();
                     if(user.getRole().getRoleId() == 1 ){
                         return  true;
                     }
                 }
-
         }
         return false;
     }
