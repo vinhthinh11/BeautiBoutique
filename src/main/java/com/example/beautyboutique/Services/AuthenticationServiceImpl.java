@@ -105,6 +105,16 @@ public class AuthenticationServiceImpl  implements AuthenticationService{
         }
         return sb.toString();
     }
+    public String generateRandomOTP() {
+        String characters = "0123456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+        return sb.toString();
+    }
     public String getEmail(String username) {
         Optional<User> Opuser = userRepository.findByUsername(username);
         User user = Opuser.orElseThrow(() -> new IllegalArgumentException("Người dùng không tồn tại"));
