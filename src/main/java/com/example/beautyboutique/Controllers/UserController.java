@@ -20,7 +20,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/getser")
+    @GetMapping("/getUser")
     public ResponseEntity<UserDto> getuser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token){
         User user =  userService.getUserByUsername(JwtUtil.getUsernameFromJwt(token));
         String username = user.getUsername();
