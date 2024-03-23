@@ -35,16 +35,18 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests ->
                     requests
-                            .requestMatchers(HttpMethod.DELETE).permitAll()
-                            .requestMatchers(HttpMethod.POST).permitAll()
-                            .requestMatchers(HttpMethod.GET).permitAll()
-                            .requestMatchers(HttpMethod.PUT).permitAll()
                             .requestMatchers("/api/auth/**").permitAll()
+                            .requestMatchers("/api/product/**").permitAll()
+                            .requestMatchers("/api/category/**").permitAll()
                             .requestMatchers("/api/users/**").permitAll()
                             .requestMatchers("/api/cart/**").permitAll()
                             .requestMatchers("/api/blog/**").permitAll()
-                            .requestMatchers("/api/voucher/**").permitAll()
-                            .requestMatchers("/api/voucher/**").permitAll()
+                            .requestMatchers("/api/blog/comment/**").permitAll()
+                            .requestMatchers("/api/product/feedback/**").permitAll()
+                            .requestMatchers("/api/voucher/create-voucher").hasRole("ADMIN")
+                            .requestMatchers("/api/voucher/delete-voucher").hasRole("ADMIN")
+                            .requestMatchers("/api/voucher/update-voucher").hasRole("ADMIN")
+                            .requestMatchers("/api/voucher/get-all-voucher").permitAll()
                             .requestMatchers("/api/order/**").permitAll()
                             .requestMatchers("/api/ship-detail/**").permitAll()
                             .anyRequest().authenticated())
@@ -72,19 +74,5 @@ public class SecurityConfiguration {
     {
         return config.getAuthenticationManager();
     }
-
-        @Bean
-        public CorsConfigurationSource corsConfigurationSource() {
-            CorsConfiguration configuration = new CorsConfiguration();
-            configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000*")); // Thay vì sử dụng allowedOrigins("*"), bạn sử dụng allowedOriginPatterns và chỉ định pattern cho các origin cụ thể.
-            configuration.addAllowedHeader("*");
-            configuration.addAllowedMethod("*");
-            configuration.setAllowCredentials(true);
-
-            UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-            source.registerCorsConfiguration("/**", configuration);
-            return source;
-        }
-
 
 }

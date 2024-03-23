@@ -1,5 +1,6 @@
 package com.example.beautyboutique.Services.User;
 
+import com.example.beautyboutique.Exception.ResourceNotFoundException;
 import com.example.beautyboutique.Models.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -11,7 +12,7 @@ public interface UserService {
 
     public Optional<User> getUserByUserName(String userName);
 
-    public Optional<User> getUserById(Integer id);
+    public Optional<User> getUserById(Integer id) throws ResourceNotFoundException;
 
     List<User> findAll();
 
@@ -26,4 +27,6 @@ public interface UserService {
     User save(User user);
     public User getUserByUsername(String username);
     UserDetailsService userDetailsService ();
+
+
 }

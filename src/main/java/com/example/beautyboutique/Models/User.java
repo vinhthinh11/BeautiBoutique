@@ -29,6 +29,8 @@ public class User extends BaseEntity implements UserDetails {
 
     @Column(name = "username", length = 10, nullable = false)
     private String username;
+    @Column(name = "email", length = 50, nullable = false)
+    private String email;
 
     @Column(name = "address", length = 200)
     private String address;
@@ -42,11 +44,6 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "date_of_birth")
     private Date dateOfBirth;
 
-    @Column(name = "facebook_account_id")
-    private int facebookAccountId;
-
-    @Column(name = "google_account_id")
-    private int googleAccountId;
 
     @ManyToOne
     @JoinColumn(name = "role_id")

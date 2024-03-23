@@ -71,12 +71,14 @@ public class CommentBlogControllers {
     public ResponseEntity<?> deleteComment(@RequestParam(value = "id") Integer id,HttpServletRequest requestToken) {
         try {
             Integer userId = jwtService.getUserIdByToken(requestToken);
+            boolean isAdmin = jwtService.isAdmin(requestToken);
+            System.out.printf("isAdmin" + isAdmin);
             if (id == null || id <= 0) {
                 return ResponseEntity.badRequest().body("Invalid comment ID");
             }
             Comment comment = commentServices.getACommentById(id);
             int ownerId = comment.getUser().getId();
-            if (userId == ownerId) {
+            if (userId == ownerId || isAdmin) {
                 boolean isDelete = commentServices.deleteComment(id);
                 if (isDelete) {
                     return new ResponseEntity<>("Delete comment successfully!", HttpStatus.OK);

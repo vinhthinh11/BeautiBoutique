@@ -111,8 +111,8 @@ public class CartServiceImpl implements CartService {
             if (productOptional.isEmpty())
                 return new ResponseDTO(false, "Product not found!");
             Product product = productOptional.get();
-            BigDecimal priceSaleProduct = product.getSalePrice();
 
+            BigDecimal priceSaleProduct = product.getSalePrice();
             BigDecimal quantityBig = BigDecimal.valueOf(quantity);
             Optional<Cart> cartOptional = cartRepository.findByUserId(userId);
             if (cartOptional.isPresent()) {
@@ -131,7 +131,7 @@ public class CartServiceImpl implements CartService {
                     cartItemRepository.save(cartItem);
                     return new ResponseDTO(true, "Add to cart successfully!");
                 } else {
-                    CartItem cartItem = new CartItem(cart,product,1,priceSaleProduct);
+                    CartItem cartItem = new CartItem(cart,product,quantity,priceSaleProduct);
                     cartItemRepository.save(cartItem);
                     return new ResponseDTO(true, "Add to cart successfully!");
                 }

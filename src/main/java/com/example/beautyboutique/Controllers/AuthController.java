@@ -1,12 +1,13 @@
 package com.example.beautyboutique.Controllers;
 
-import com.example.beautyboutique.DTOs.JwtAuthenticationResponse;
-import com.example.beautyboutique.DTOs.RefreshTokenRequest;
-import com.example.beautyboutique.DTOs.SignInRequest;
-import com.example.beautyboutique.DTOs.SignUpRequest;
+import com.example.beautyboutique.DTOs.*;
+import com.example.beautyboutique.Exceptions.DataNotFoundException;
 import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Services.AuthenticationService;
+import com.example.beautyboutique.Services.EmailService;
+import com.example.beautyboutique.Services.User.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,21 +17,52 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthenticationService authenticationService;
+    private final UserService userService;
 
+    private final EmailService mailService;
     @PostMapping("/register")
-    public ResponseEntity<User> signup(@RequestBody SignUpRequest signUpRequest) {
-        return ResponseEntity.ok(authenticationService.signup(signUpRequest));
+    public ResponseEntity <?> signup(@RequestBody SignUpRequest signUpRequest){
+        try {
+            if(!signUpRequest.getPassword().equals(signUpRequest.getRetypePassword())){
+                return ResponseEntity.badRequest().body("pass word does not match");
+            }
+            User user =  authenticationService.signup(signUpRequest);
+            return ResponseEntity.ok(user);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthenticationResponse> signIn(@RequestBody SignInRequest signInRequest) {
-        return ResponseEntity.ok(authenticationService.signin(signInRequest));
+    public ResponseEntity<?> siginin(
+            @RequestBody SignInRequest signInRequest){
+        try {
+            JwtAuthenticationResponse authenticationResponse = authenticationService.signin(signInRequest);
+            return ResponseEntity.ok(authenticationResponse);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
+
+
 
     @PostMapping("/refresh")
     public ResponseEntity<JwtAuthenticationResponse> refresh(
             @RequestBody RefreshTokenRequest refreshTokenRequest) {
         return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
     }
+    @PostMapping("/forgot")
+    public ResponseEntity<String> reset(
+            @RequestParam(name="username") String username)
+    {
+        String subject= "Khoi phuc mat khau:";
+        String newpass = "new password: " +  authenticationService.resetpass(username);
+        String email = authenticationService.getEmail(username);
+        mailService.sendEmail(email,subject,newpass);
+        return  ResponseEntity.ok("ok");
+    }
+
 
 }

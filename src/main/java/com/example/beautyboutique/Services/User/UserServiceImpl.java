@@ -1,6 +1,7 @@
 package com.example.beautyboutique.Services.User;
 
 import com.example.beautyboutique.Exception.ResourceNotFoundException;
+
 import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ public class UserServiceImpl implements UserService {
         if (users.isEmpty()) {
             throw new ResourceNotFoundException("User with name " + userName + " not found");
         }
+
         return users;
     }
 

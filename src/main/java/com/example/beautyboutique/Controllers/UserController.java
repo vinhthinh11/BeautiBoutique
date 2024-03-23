@@ -1,4 +1,6 @@
 package com.example.beautyboutique.Controllers;
+
+import com.example.beautyboutique.DTOs.UserDto;
 import com.example.beautyboutique.Services.User.UserService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,15 +17,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 public class UserController {
-    UserService userService;
-    @GetMapping("")//get-user
-    public ResponseEntity<String> gSetuser(){
-        return ResponseEntity.ok("hiadmin");
-    }
+
+    private final UserService userService;
+
     @GetMapping("/getuser")
-    public ResponseEntity<User> getuser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token){
+    public ResponseEntity<UserDto> getuser(@RequestHeader(HttpHeaders.AUTHORIZATION) String token){
         User user =  userService.getUserByUsername(JwtUtil.getUsernameFromJwt(token));
+        String username = user.getUsername();
         Integer userId= user.getId();
-        return ResponseEntity.ok(user);
+        String roleName=user.getRole().getRoleName();
+        String email = user.getEmail();
+        return ResponseEntity.ok(new UserDto(userId,username,roleName,email));
     }
 }

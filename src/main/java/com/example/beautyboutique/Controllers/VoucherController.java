@@ -33,7 +33,9 @@ public class VoucherController {
     @Autowired
     JWTServiceImpl jwtService;
 
+
     @GetMapping(value = "/get-voucher")
+
     public ResponseEntity<?> getVouchers(HttpServletRequest requestToken) {
         try {
             Integer userId = jwtService.getUserIdByToken(requestToken);
@@ -44,6 +46,7 @@ public class VoucherController {
             List<VoucherDetail> listVouchers = voucherServices.getListVouchersByUserId(userId);
             return new ResponseEntity<>(new VoucherOfUser(0, "Get vouchers of user successfully!", listVouchers), HttpStatus.OK);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             return new ResponseEntity<>("Get vouchers fail!", HttpStatus.BAD_REQUEST);
         }
     }
