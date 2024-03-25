@@ -27,7 +27,7 @@ public class EmailServiceImpl implements EmailService {
         message.setSubject(subject);
         message.setText(body);
         mailSender.send(message);
-        return "send ok";
+        return body;
     }
 
 

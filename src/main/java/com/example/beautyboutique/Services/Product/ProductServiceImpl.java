@@ -156,7 +156,6 @@ public class ProductServiceImpl implements ProductService {
         if (productUpdate == null) {
             throw new IllegalArgumentException("Product update data cannot be null");
         }
-
         try {
             Optional<Product> productOptional = productRepository.findById(id);
             if (!productOptional.isPresent()) {
@@ -201,7 +200,7 @@ public class ProductServiceImpl implements ProductService {
                         });
             }
 
-            return product;
+            return productRepository.save(product);
         } catch (ResourceNotFoundException e) {
             throw e;
         } catch (Exception e) {

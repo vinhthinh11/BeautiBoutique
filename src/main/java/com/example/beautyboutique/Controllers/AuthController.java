@@ -32,8 +32,6 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-
     @PostMapping("/login")
     public ResponseEntity<?> siginin(
             @RequestBody SignInRequest signInRequest){
@@ -44,24 +42,28 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-
-
-
     @PostMapping("/refresh")
     public ResponseEntity<JwtAuthenticationResponse> refresh(
             @RequestBody RefreshTokenRequest refreshTokenRequest) {
         return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
     }
-    @PostMapping("/forgot")
-    public ResponseEntity<String> reset(
-            @RequestParam(name="username") String username)
+    @PostMapping("/sendotp")
+    public ResponseEntity<String> otp(
+            @RequestParam(name = "username") String username)
     {
-        String subject= "Khoi phuc mat khau:";
-        String newpass = "new password: " +  authenticationService.resetpass(username);
+        String subject= "Ma OTP CUA BAN:";
+        String OTP =   authenticationService.generateRandomOTP();
         String email = authenticationService.getEmail(username);
-        mailService.sendEmail(email,subject,newpass);
-        return  ResponseEntity.ok("ok");
+        return  ResponseEntity.ok(mailService.sendEmail(email,subject,OTP));
+    }
+    @PostMapping("/resetpass")
+    public ResponseEntity<String> resetpass(
+            @RequestParam(name = "username") String username)
+    {
+        String subject= "Mat khau moi cua ban la:";
+        String newpass=   authenticationService.resetpass(username);
+        String email = authenticationService.getEmail(username);
+        return  ResponseEntity.ok(mailService.sendEmail(email,subject,newpass));
     }
 
 
