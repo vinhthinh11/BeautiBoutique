@@ -1,4 +1,4 @@
-package com.example.beautyboutique.DTOs.Requests.Blog;
+package com.example.beautyboutique.DTOs.Requests.Product;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class CommentBlogRequest {
-    private Integer blogId;
+public class FeedbackRequest {
     private String content;
+    private Integer rating;
+    private Integer productId;
+    private Integer userId;
 }

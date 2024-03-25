@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthenticationService authenticationService;
@@ -21,14 +21,19 @@ public class AuthController {
 
     private final EmailService mailService;
     @PostMapping("/register")
-    public ResponseEntity <?> signup(@RequestBody SignUpRequest signUpRequest) throws DataNotFoundException {
+    public ResponseEntity <?> signup(@RequestBody SignUpRequest signUpRequest){
         try {
+            if(!signUpRequest.getPassword().equals(signUpRequest.getRetypePassword())){
+                return ResponseEntity.badRequest().body("pass word does not match");
+            }
             User user =  authenticationService.signup(signUpRequest);
             return ResponseEntity.ok(user);
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+
     @PostMapping("/login")
     public ResponseEntity<?> siginin(
             @RequestBody SignInRequest signInRequest){
@@ -41,17 +46,21 @@ public class AuthController {
     }
 
 
+
+
     @PostMapping("/refresh")
     public ResponseEntity<JwtAuthenticationResponse> refresh(
-            @RequestBody RefreshTokenRequest refreshTokenRequest)
-    {
-        return  ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
+            @RequestBody RefreshTokenRequest refreshTokenRequest) {
+        return ResponseEntity.ok(authenticationService.refreshToken(refreshTokenRequest));
     }
     @PostMapping("/forgot")
     public ResponseEntity<String> reset(
             @RequestParam(name="username") String username)
     {
-        mailService.sendEmail(username);
+        String subject= "Khoi phuc mat khau:";
+        String newpass = "new password: " +  authenticationService.resetpass(username);
+        String email = authenticationService.getEmail(username);
+        mailService.sendEmail(email,subject,newpass);
         return  ResponseEntity.ok("ok");
     }
 

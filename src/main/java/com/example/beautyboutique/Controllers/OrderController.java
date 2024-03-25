@@ -2,11 +2,13 @@ package com.example.beautyboutique.Controllers;
 
 import com.example.beautyboutique.DTOs.Requests.Payment.CartItemId;
 import com.example.beautyboutique.DTOs.Responses.Order.*;
+import com.example.beautyboutique.DTOs.Responses.ResponseDTO;
 import com.example.beautyboutique.DTOs.Responses.ResponseMessage;
 import com.example.beautyboutique.Models.Orders;
 import com.example.beautyboutique.Models.Payment;
 import com.example.beautyboutique.Models.User;
 import com.example.beautyboutique.Repositories.UserRepository;
+import com.example.beautyboutique.Services.JWTServiceImpl;
 import com.example.beautyboutique.Services.Order.OrderServiceImpl;
 import com.example.beautyboutique.Services.ZaloPay.ZaloPayServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,6 +44,9 @@ public class OrderController {
     @Autowired
     OrderServiceImpl orderService;
 
+    @Autowired
+    JWTServiceImpl jwtService;
+
     @GetMapping(value = "/order-histories")
     public ResponseEntity<?> getOrderHistories(@RequestParam(required = false, name = "userId") Integer userId,
                                                @RequestParam(defaultValue = "1", required = false, name = "pageNo") Integer pageNo,
@@ -66,9 +71,10 @@ public class OrderController {
     }, produces =
             MediaType.APPLICATION_JSON_VALUE
     )
-    public @ResponseBody ResponseEntity<?> createPayment(CartItemId cartItemId, @RequestParam(name = "userId") Integer userId) throws JSONException, IOException {
+    public @ResponseBody ResponseEntity<?> createPayment(CartItemId cartItemId, HttpServletRequest request) throws JSONException, IOException {
 
         try {
+            Integer userId = jwtService.getUserIdByToken(request);
             Map<String, Object> resultPayment = zaloPayService.createOrder(userId, cartItemId.getCartItemsId());
             if ((int) resultPayment.get("returncode") == 1) {
                 String paymentURL = (String) resultPayment.get("orderurl");
@@ -81,8 +87,8 @@ public class OrderController {
 
             return new ResponseEntity<>(new ResponseMessage("Create payment fail!"), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return new ResponseEntity<>(new ResponseMessage("Internal Server!"), HttpStatus.INTERNAL_SERVER_ERROR);
+            System.out.println("Payment: " + e.getMessage());
+            return new ResponseEntity<>(new ResponseMessage("Internal Server Error!"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -94,18 +100,19 @@ public class OrderController {
     )
     public @ResponseBody ResponseEntity<?> createOrder(CartItemId cartItemId,
                                                        @RequestParam(name = "zpTransToken", required = false) String zpTransToken,
-                                                       @RequestParam(name = "userId") Integer userId,
                                                        @RequestParam(name = "shipDetailId") Integer shipDetailId,
                                                        @RequestParam(name = "deliveryId") Integer deliveryId,
                                                        @RequestParam(name = "paymentId") Integer paymentId,
-                                                       @RequestParam(name = "voucherId") Integer voucherId
+                                                       @RequestParam(name = "voucherId", required = false) Integer voucherId,
+                                                       HttpServletRequest request
 
     ) throws JSONException, URISyntaxException, IOException {
         try {
-            Map<String, Object> result = zaloPayService.statusOrder(zpTransToken);
-            System.out.println(result.get("returncode"));
-            System.out.println(result.get("returnmessage"));
+            Integer userId = jwtService.getUserIdByToken(request);
             if (zpTransToken != null) {
+                Map<String, Object> result = zaloPayService.statusOrder(zpTransToken);
+                System.out.println(result.get("returncode"));
+                System.out.println(result.get("returnmessage"));
                 if ((int) result.get("returncode") == 1 && result.get("returnmessage").toString().equals("Giao dịch thành công")) {
                     CreatedOrder createdOrder = orderService.createOrder(userId, shipDetailId, deliveryId, paymentId, voucherId, cartItemId.getCartItemsId());
                     if (createdOrder.getStatus())
@@ -125,54 +132,74 @@ public class OrderController {
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return new ResponseEntity<>("Internal Server!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Internal Server Error!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping(value = "/update-order")
-    public ResponseEntity<?> updateOrder(@RequestParam(name = "userId") Integer userId,
-                                         @RequestParam(name = "orderId") Integer orderId,
-                                         @RequestParam(name = "shipDetailId") Integer shipDetailId) {
+    public ResponseEntity<?> updateOrder(@RequestParam(name = "orderId") Integer orderId,
+                                         @RequestParam(name = "shipDetailId") Integer shipDetailId,
+                                         HttpServletRequest request) {
         try {
+            Integer userId = jwtService.getUserIdByToken(request);
             UpdateOrder updateOrder = orderService.updateShipDetailOrder(userId, orderId, shipDetailId);
             Boolean isUpdated = updateOrder.getIsUpdated();
             String message = updateOrder.getMessage();
             return new ResponseEntity<>(new ResponseMessage(message), isUpdated ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return new ResponseEntity<>(new ResponseMessage("Internal Server!"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ResponseMessage("Internal Server Error!"), HttpStatus.BAD_REQUEST);
         }
     }
 
     @DeleteMapping(value = "/cancel-order")
-    public ResponseEntity<?> cancelOrder(@RequestParam(name = "userId") Integer userId,
-                                         @RequestParam(name = "orderId") Integer orderId) {
+    public ResponseEntity<?> cancelOrder(@RequestParam(name = "orderId") Integer orderId,
+                                         HttpServletRequest request) {
         try {
+            Integer userId = jwtService.getUserIdByToken(request);
             CancelOrder cancelOrder = orderService.cancelOrder(userId, orderId);
             Boolean isCancelled = cancelOrder.getIsCancelled();
             String message = cancelOrder.getMessage();
             return new ResponseEntity<>(new ResponseMessage(message), isCancelled ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return new ResponseEntity<>(new ResponseMessage("Internal Server!"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ResponseMessage("Internal Server Error!"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
 
     @PutMapping(value = "/approve-order")
-    public ResponseEntity<?> acceptOrder(@RequestParam(name = "userId") Integer userId,
-                                         @RequestParam(name = "orderId") Integer orderId,
-                                         @RequestParam(name = "isAccept") Boolean isAccept) {
+    public ResponseEntity<?> acceptOrder(@RequestParam(name = "orderId") Integer orderId,
+                                         @RequestParam(name = "isAccept") Boolean isAccept,
+                                         HttpServletRequest request) {
         try {
+            Integer userId = jwtService.getUserIdByToken(request);
             UpdateOrder updateOrder = orderService.updateStatusOrder(userId, orderId, isAccept);
             Boolean isUpdated = updateOrder.getIsUpdated();
             String message = updateOrder.getMessage();
             return new ResponseEntity<>(new ResponseMessage(message), isUpdated ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return new ResponseEntity<>(new ResponseMessage("Internal Server!"), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ResponseMessage("Internal Server Error!"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+    @PutMapping(value = "/change-status")
+    public ResponseEntity<?> changeStatus(
+            @RequestParam(name = "statusId") Integer statusId,
+            @RequestParam(name = "orderItemId") Integer orderItemId,
+            HttpServletRequest request) {
+        try {
+            Integer userId = jwtService.getUserIdByToken(request);
+            ResponseDTO responseDTO = orderService.changeStatusOrder(userId, orderItemId, statusId);
+            if (responseDTO.getIsSuccess())
+                return new ResponseEntity<>(new ResponseMessage(responseDTO.getMessage()), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponseMessage(responseDTO.getMessage()), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ResponseMessage("Internal Server Error!"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 
