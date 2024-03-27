@@ -192,7 +192,7 @@ public class ProductServiceImpl implements ProductService {
                         .forEach(index -> {
                             String imageId = productUpdate.getImageIds()[index];
                             String imageUrl = productUpdate.getImageUrls()[index];
-                            ProductImage image = new ProductImage();
+                             ProductImage image = new ProductImage();
                             image.setId(imageId);
                             image.setImageUrl(imageUrl);
                             image.setProduct(product);
